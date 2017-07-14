@@ -8,7 +8,7 @@ Crafty.c("Player", {
 
         this.w = 16;
         this.h = 16;
-        this.z = 1;
+        this.z = 10;
         this.rotation = 0;
     },
 
@@ -25,16 +25,20 @@ Crafty.c("Player", {
     addWeapon: function(type){
         this.origin('center');
         if(type == 'rifle'){
-            var rifle = Crafty.e("2D, Canvas, Color").attr({x:16, y:5, w:8, h:5,z:2}).color('red');
+            var rifle = Crafty.e("2D, Canvas, Color").attr({x:16, y:5, w:8, h:5, z:10}).color('red');
 			this.attach(rifle);
         }
 
         return this;
     },
 
-    name: function(name) {
-            this.name = name;
-        this.attach(Crafty.e("2D, DOM, Text").attr({ x: 10, y: 20 }).text(name).textColor(name).textFont({ size: '11px', weight: 'bold' }));
+    setName: function(name) {
+        this.name = name;
+        return this;
+    },
+
+    showName: function(name) {
+        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor('black').textFont({ size: '11px', weight: 'bold' }));
         return this;
     }
 });
@@ -55,6 +59,8 @@ Crafty.c("ControlablePlayer", {
                 this.movePlayer("backward");
             } else if(e.key == Crafty.keys.SPACE)	{
                 this.shoot();
+            }else if (e.key == Crafty.keys.X){
+                this.shoot3();
             }
         });
 
@@ -95,7 +101,7 @@ Crafty.c("ControlablePlayer", {
 
                 that.place(newX, newY);
             }
-        },1);
+        }, 1);
     },
 
     rotatePlayer: function (direction){
@@ -122,14 +128,39 @@ Crafty.c("ControlablePlayer", {
         var _y = this.y;
         var _rotation = this.rotation;
         
-        _x += (2 * Math.cos(_rotation * Math.PI / 180)) + 16;
-        _y += (2 * Math.sin(_rotation * Math.PI / 180)) + 16;
+        _x += (2 * Math.cos(_rotation * Math.PI / 180));
+        _y += (2 * Math.sin(_rotation * Math.PI / 180)) + 4;
         
-        var bullet = Crafty.e("2D, Canvas, Color, Tween").attr({ x:_x, y:_y, w:8, h:8,z:1, rotation: this.rotation }).color("orange");
+        var bullet = Crafty.e("2D, Canvas, Color, Tween").attr({ x:_x, y:_y, w:5, h:5, z:1, rotation: this.rotation }).color("orange");
         
         window.setInterval(function(){									
-            bullet.x += 2 * Math.cos(_rotation * Math.PI / 180);
-            bullet.y += 2 * Math.sin(_rotation * Math.PI / 180);										
-        },1);
+            bullet.x += 3 * Math.cos(_rotation * Math.PI / 180);
+            bullet.y += 3 * Math.sin(_rotation * Math.PI / 180);										
+        }, 1);
+    },
+
+    shoot3: function (){
+        var _x = this.x;
+        var _y = this.y;
+        var _rotation = this.rotation;
+        
+        _x += (2 * Math.cos(_rotation * Math.PI / 180));
+        _y += (2 * Math.sin(_rotation * Math.PI / 180)) + 4;
+        
+        var bullet1 = Crafty.e("2D, Canvas, Color, Tween").attr({ x:_x, y:_y, w:5, h:5, z:1, rotation: this.rotation }).color("orange");
+        var bullet2 = Crafty.e("2D, Canvas, Color, Tween").attr({ x:_x, y:_y, w:5, h:5, z:1, rotation: this.rotation + 45 }).color("orange");
+        var bullet3 = Crafty.e("2D, Canvas, Color, Tween").attr({ x:_x, y:_y, w:5, h:5, z:1, rotation: this.rotation - 45}).color("orange");
+        
+        window.setInterval(function(){									
+            var v = 0.5;
+            bullet1.x += v * Math.cos(bullet1.rotation * Math.PI / 180);
+            bullet1.y += v * Math.sin(bullet1.rotation * Math.PI / 180);										
+
+            bullet2.x += v * Math.cos(bullet2.rotation * Math.PI / 180);
+            bullet2.y += v * Math.sin(bullet2.rotation * Math.PI / 180);										
+
+            bullet3.x += v * Math.cos(bullet3.rotation * Math.PI / 180);
+            bullet3.y += v * Math.sin(bullet3.rotation * Math.PI / 180);										
+        }, 1);
     }
 });

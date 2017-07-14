@@ -38,7 +38,8 @@
 		function createPlayer(nick, color){
 			
 			var player = Crafty.e("ControlablePlayer")
-										.name(nick)
+										.setName(nick)
+										.showName()
 										.color(color)	
 										.addWeapon('rifle')
 										.place(0, 0);
