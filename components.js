@@ -69,7 +69,7 @@ Crafty.c("ControlablePlayer", {
 			
 			setInterval(function(){
 				socket.emit("correction",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId});
-			},500);
+			},1000);
 			
 			socket.on("player-correction",function(correctionData){
 				console.log(that._playerId,that.name,"CORRECTION",correctionData.id);
