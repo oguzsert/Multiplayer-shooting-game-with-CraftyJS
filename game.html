@@ -1,16 +1,18 @@
 <html>
-  <head></head>
-  <body style="font-family:tahoma;">
+
+<head></head>
+
+<body style="font-family:tahoma;">
 	<style>
-		#createbutton{
-			width:150px;
-			height:15px;
-			background-color:#efefef;
-			text-align:center;
-			padding:10px;
-			cursor:pointer;
-			margin-bottom:5px;
-			margin-top:5px;
+		#createbutton {
+			width: 150px;
+			height: 15px;
+			background-color: #efefef;
+			text-align: center;
+			padding: 10px;
+			cursor: pointer;
+			margin-bottom: 5px;
+			margin-top: 5px;
 		}
 	</style>
 	<input type="text" placeholder="nick" id="nick" value="Keke">
@@ -20,21 +22,20 @@
 		<div style="float:left;margin-left:10px" id="msg">engine on/off: press E</div>
 	</div>
 	<div style="clear:both"></div>
-	
+
 	<div id="game" style="border:1px dotted #000;"></div>
-	
+
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./components.js"></script>
 	<script type="text/javascript" src="./socket.io.js"></script>
-  <script>
-  
+	<script>
 		var socket = io('http://192.168.6.80:3000');
-		
+
 		var players = {};
 
 		var assets = {
 			"audio": {
-					"weapon": "weapon.wav"
+				"weapon": "weapon.wav"
 			}
 		}
 
@@ -47,55 +48,64 @@
 		Crafty.audio.add("shoot3", "asset/sound/shoot/shoot002.mp3");
 		Crafty.audio.add("engine-idle", "asset/sound/engine/090913-009.mp3");
 		Crafty.audio.add("engine", "asset/sound/engine/090913-002.mp3");
-		
+
 		//Crafty.load({assets,  onLoad})
 
-		function onLoad(){
-			
-		}
-
-		function createControllablePlayer(){
-		    var playerColor = document.getElementById("renk").value;
-				var playerNick = document.getElementById("nick").value;					
-				var player = createPlayer(playerNick, playerColor,undefined,true);
-				
-				socket.emit("createPlayerOnServer",{
-						nick:playerNick,
-						color:playerColor,
-						id:player._playerId,
-						x:player.x,
-						y:player.y
-					}
-				);
+		function onLoad() {
 
 		}
-		
-		socket.on("newPlayerJoined",function(newPlayerInfo){
-				console.log("new-player-joined");
-				createPlayer(newPlayerInfo.nick,newPlayerInfo.color,newPlayerInfo.id,false);
+
+		function createControllablePlayer() {
+			var playerColor = document.getElementById("renk").value;
+			var playerNick = document.getElementById("nick").value;
+
+			var player = createMyPlayer(playerNick, playerColor);
+
+			socket.emit("createPlayerOnServer", {
+				nick: playerNick,
+				color: playerColor,
+				id: player._playerId,
+				x: player.x,
+				y: player.y
+			});
+		}
+
+		socket.on("newPlayerJoined", function (newPlayerInfo) {
+			console.log("new-player-joined");
+			createOtherPlayer(newPlayerInfo.id, newPlayerInfo.nick, newPlayerInfo.color);
 		});
-				
-		
-		function createPlayer(nick, color,id,_isControllable){
-			
-			var player = Crafty.e("ControlablePlayer")
-										.setName(nick)
-										.showName()
-										.color(color)	
-										.addWeapon('rifle')										
-										.setId(id)
-										.place(0,0)
-										.bindSocket(socket)
-										.setControlFlag(_isControllable);
-										
+
+		function createMyPlayer(nick, color) {
+
+			var player = Crafty.e("MyPlayer")
+				.setName(nick)
+				.showName()
+				.color(color)
+				.addWeapon('rifle')
+				.place(0, 0)
+				.bindSocket(socket);
+
 			players[player._playerId] = player;
-			
 
 			return player;
 		}
-		
-		
-		
-    </script>
-  </body>
+
+		function createOtherPlayer(id, nick, color) {
+
+			var player = Crafty.e("OtherPlayer")
+				.setId(id)
+				.setName(nick)
+				.showName()
+				.color(color)
+				.addWeapon('rifle')
+				.place(0, 0)
+				.bindSocket(socket);
+
+			players[player._playerId] = player;
+
+			return player;
+		}
+	</script>
+</body>
+
 </html>
