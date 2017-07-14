@@ -48,7 +48,6 @@ Crafty.c("Player", {
         this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor('black').textFont({ size: '11px', weight: 'bold' }));
         return this;
     },
-
     movePlayer: function (direction) {
 
         window.clearInterval(this._movementInterval);
@@ -227,6 +226,14 @@ Crafty.c("MyPlayer", {
 
         this.socket = null;
         
+         this.onSocketBinded = function(socket){
+            var that = this;                      			
+
+            setInterval(function(){
+				socket.emit("correction",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId});
+			}, 1000);
+        }
+        
         this.bind('KeyDown', function (e) {
             if (e.key == Crafty.keys.E) {
                 if (!this.engineStarted) {
@@ -292,6 +299,15 @@ Crafty.c("OtherPlayer", {
 
         this.onSocketBinded = function(socket){
             var that = this;
+                    			
+			socket.on("player-correction",function(correctionData){
+				console.log(that._playerId,that.name,"CORRECTION",correctionData.id);
+				if(correctionData.id == that._playerId){
+					that.x = correctionData.x;
+					that.y = correctionData.y;
+					that.rotation = correctionData.rotation;
+				}
+            });
             
 			socket.on("player-engine-on",function(id){
 				console.log(that._playerId,that.name,"ENGINE-ON",id);

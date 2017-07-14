@@ -43,8 +43,11 @@ io.on('connection', function(client){
 	});
 	
 	client.on("shoot",function(playerId){
-		client.broadcast.emit("player-shoot",playerId);
-		
+		client.broadcast.emit("player-shoot",playerId);		
+	});
+	
+	client.on("correction",function(correctionData){
+		client.broadcast.emit("player-correction",correctionData);		
 	});
   
   
