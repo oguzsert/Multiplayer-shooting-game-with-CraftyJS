@@ -25,7 +25,11 @@
 	
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./components.js"></script>
+	<script type="text/javascript" src="./socket.io.js"></script>
   <script>
+  
+		var socket = io('http://192.168.6.80:3000');
+		
 		var players = {};
 
 		var assets = {
@@ -52,24 +56,43 @@
 
 		function createControllablePlayer(){
 		    var playerColor = document.getElementById("renk").value;
-				var playerNick = document.getElementById("nick").value;
-					
+				var playerNick = document.getElementById("nick").value;					
 				var player = createPlayer(playerNick, playerColor);
+				
+				socket.emit("createPlayerOnServer",{
+						nick:playerNick,
+						color:playerColor,
+						id:player._playerId,
+						x:player.x,
+						y:player.y
+					}
+				);
 
-				players[player._playerId] = player;
 		}
 		
-		function createPlayer(nick, color){
+		socket.on("newPlayerJoined",function(newPlayerInfo){
+				console.log("new-player-joined");
+				createPlayer(newPlayerInfo.nick,newPlayerInfo.color,newPlayerInfo.id);
+		});
+				
+		
+		function createPlayer(nick, color,id){
 			
 			var player = Crafty.e("ControlablePlayer")
 										.setName(nick)
 										.showName()
 										.color(color)	
-										.addWeapon('rifle')
-										.place(50, boardHeight / 2);
+										.addWeapon('rifle')										
+										.setId(id)
+										.place(0,0)
+										.bindSocket(socket);										
+			players[player._playerId] = player;
 			
+
 			return player;
 		}
+		
+		
 		
     </script>
   </body>

@@ -4,7 +4,7 @@ Crafty.c("Player", {
         this.addComponent("2D, Canvas, Color, Twoway");
 
         this._playerId = new Date().getTime();
-
+		this.socket = null;
         this.w = 16;
         this.h = 16;
         this.z = 10;
@@ -35,28 +35,118 @@ Crafty.c("Player", {
     showName: function (name) {
         this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor('black').textFont({ size: '11px', weight: 'bold' }));
         return this;
-    }
+    },
+	
+	setId: function(id){
+		if(id !== undefined){
+			this._playerId = id;
+		}
+		return this;
+	},
+	
+	bindSocket:function(socketObject){
+		this.socket = socketObject;
+		this.onSocketBinded(this.socket);
+		return this;
+	}
+	
+	
 });
 
 Crafty.c("ControlablePlayer", {
 
     init: function () {
         this.addComponent("Player");
-
         this.engineStarted = false;
         this.movingForward = false;
         this.movingBackward = false;
+		var that =this;
+		this.onSocketBinded = function(socket){
+			socket.on("player-engine-on",function(id){
+				console.log(that._playerId,that.name,"ENGINE-ON",id);
+				if(id == that._playerId){
+					that.startEngine();
+				}
+			});
+		
+			socket.on("player-engine-off",function(id){
+				console.log(that._playerId,that.name,"ENGINE-OFF",id);
+				if(id == that._playerId){
+					that.stopEngine();
+				}
+			});
+			
+			socket.on("player-move-forward",function(id){
+				console.log(that._playerId,that.name,"MOVING-FORWARD");
+				if(id == that._playerId){
+					that.movePlayer("forward");
+				}
+			});
+			
+			
+			socket.on("player-move-backward",function(id){
+				console.log(that._playerId,that.name,"MOVING-BACKWARD");
+				if(id == that._playerId){
+					that.movePlayer("backward");
+				}
+			});
+			
+			
+			socket.on("player-stop-movement",function(id){
+				console.log(that._playerId,that.name,"STOP-MOVEMENT");
+				if(id == that._playerId){
+					that.movePlayer("stopMovement");
+				}
+			});
+			
+			socket.on("player-rotate-right",function(id){
+				console.log(that._playerId,that.name,"ROTATE-RIGHT");
+				if(id == that._playerId){
+					that.rotatePlayer("right");
+				}
+			});
+			
+			
+			socket.on("player-rotate-left",function(id){
+				console.log(that._playerId,that.name,"ROTATE-LEFT");
+				if(id == that._playerId){
+					that.rotatePlayer("left");
+				}
+			});
+			
+			
+			socket.on("player-rotate-stop",function(id){
+				console.log(that._playerId,that.name,"ROTATE-STOP");
+				if(id == that._playerId){
+					that.rotatePlayer("stopRotate");
+				}
+			});
+			
+			
+		}
+		
+	
 
         this.bind('KeyDown', function (e) {
             if (e.key == Crafty.keys.E) {
-                this.toggleEngine();
+                if (!this.engineStarted) {
+                    this.startEngine();
+					this.socket.emit("engine-on",this._playerId);
+                } else {
+                    this.stopEngine();
+					this.socket.emit("engine-off",this._playerId);
+                }				
             } else if (e.key == Crafty.keys.LEFT_ARROW) {
+				this.socket.emit("rotate-left",this._playerId);
                 this.rotatePlayer("left");
             } else if (e.key == Crafty.keys.RIGHT_ARROW) {
                 this.rotatePlayer("right");
+				this.socket.emit("rotate-right",this._playerId);
             } else if (e.key == Crafty.keys.UP_ARROW) {
+				this.socket.emit("move-forward",this._playerId);
                 this.movePlayer("forward");
             } else if (e.key == Crafty.keys.DOWN_ARROW) {
+				this.socket.emit("move-backward",this._playerId);
                 this.movePlayer("backward");
             } else if (e.key == Crafty.keys.SPACE) {
                 //this.shoot();
@@ -66,14 +156,18 @@ Crafty.c("ControlablePlayer", {
             }
         });
 
-        this.bind('KeyUp', function (e) {
+        this.bind('KeyUp', function (e) {			
             if (e.key == Crafty.keys.LEFT_ARROW) {
+				this.socket.emit("stop-rotate",this._playerId);
                 this.rotatePlayer("stopRotate");
             } else if (e.key == Crafty.keys.RIGHT_ARROW) {
+				this.socket.emit("stop-rotate",this._playerId);
                 this.rotatePlayer("stopRotate");
             } else if (e.key == Crafty.keys.UP_ARROW) {
+				this.socket.emit("stop-movement",this._playerId);
                 this.movePlayer("stopMovement");
             } else if (e.key == Crafty.keys.DOWN_ARROW) {
+				this.socket.emit("stop-movement",this._playerId);
                 this.movePlayer("stopMovement");
             } else if (e.key == Crafty.keys.SPACE) {
                 this.stopShoot();
