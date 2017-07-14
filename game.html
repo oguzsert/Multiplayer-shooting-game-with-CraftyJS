@@ -58,7 +58,7 @@
 		    var playerColor = document.getElementById("renk").value;
 				var playerNick = document.getElementById("nick").value;					
 				var player = createPlayer(playerNick, playerColor);
-													
+				
 				socket.emit("createPlayerOnServer",{
 						nick:playerNick,
 						color:playerColor,
@@ -74,6 +74,7 @@
 				console.log("new-player-joined");
 				createPlayer(newPlayerInfo.nick,newPlayerInfo.color,newPlayerInfo.id);
 		});
+				
 		
 		function createPlayer(nick, color,id){
 			
@@ -82,9 +83,11 @@
 										.showName()
 										.color(color)	
 										.addWeapon('rifle')										
-										.setId(id);										
+										.setId(id)
+										.place(0,0)
+										.bindSocket(socket);										
 			players[player._playerId] = player;
-			player.place(50, boardHeight / 2);
+			
 
 			return player;
 		}
