@@ -16,10 +16,12 @@ Crafty.c("Player", {
         this.movingForward = false;
         this.movingBackward = false;
 
-        Crafty.audio.add("shoot" + this._sessionId, "asset/sound/shoot/shoot003.mp3");
-		Crafty.audio.add("shoot3" + this._sessionId, "asset/sound/shoot/shoot002.mp3");
-		Crafty.audio.add("engine-idle" + this._sessionId, "asset/sound/engine/090913-009.mp3");
-		Crafty.audio.add("engine" + this._sessionId, "asset/sound/engine/090913-002.mp3");
+        Crafty.audio.add(this.audioFiles.ENGINE_IDLE(), "asset/sound/engine/090913-009.mp3");
+        Crafty.audio.add(this.audioFiles.ENGINE(), "asset/sound/engine/090913-002.mp3");
+        Crafty.audio.add(this.audioFiles.SHOOT(), "asset/sound/shoot/shoot003.mp3");
+		Crafty.audio.add(this.audioFiles.SHOOT3(), "asset/sound/shoot/shoot002.mp3");
+        
+        console.log(Crafty.audio);
     },
     
     place: function (x, y) {
@@ -48,6 +50,7 @@ Crafty.c("Player", {
         this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor('black').textFont({ size: '11px', weight: 'bold' }));
         return this;
     },
+
     movePlayer: function (direction) {
 
         window.clearInterval(this._movementInterval);
@@ -60,9 +63,9 @@ Crafty.c("Player", {
             this.movingForward = false;
             this.movingBackward = false;
 
-            Crafty.audio.stop("engine");
-            Crafty.audio.stop("engine-idle");
-            Crafty.audio.play("engine-idle", -1);
+            Crafty.audio.stop(this.audioFiles.ENGINE());
+            Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
+            Crafty.audio.play(this.audioFiles.ENGINE_IDLE(), -1);
 
             return;
         }
@@ -72,8 +75,8 @@ Crafty.c("Player", {
         this._movementInterval = window.setInterval(function () {
             if (direction == "forward") {
                 if (!that.movingForward) {
-                    Crafty.audio.stop("engine-idle");
-                    Crafty.audio.play("engine", -1);
+                    Crafty.audio.stop(that.audioFiles.ENGINE_IDLE());
+                    Crafty.audio.play(that.audioFiles.ENGINE(), -1);
 
                     that.movingForward = true;
                     that.movingBackward = false;
@@ -87,8 +90,8 @@ Crafty.c("Player", {
             else if (direction == "backward") {
 
                 if (!that.movingBackward) {
-                    Crafty.audio.stop("engine-idle");
-                    Crafty.audio.play("engine", -1);
+                    Crafty.audio.stop(that.audioFiles.ENGINE_IDLE());
+                    Crafty.audio.play(that.audioFiles.ENGINE(), -1);
 
                     that.movingBackward = true;
                     that.movingForward = false;
@@ -122,8 +125,8 @@ Crafty.c("Player", {
     },
 
     shoot: function () {
-        Crafty.audio.stop(this.audio.SHOOT);
-        Crafty.audio.play(this.audio.SHOOT);
+        Crafty.audio.stop(this.audioFiles.SHOOT());
+        Crafty.audio.play(this.audioFiles.SHOOT());
 
         var _x = this.x;
         var _y = this.y;
@@ -158,8 +161,8 @@ Crafty.c("Player", {
     },
 
     shoot3: function () {
-        Crafty.audio.stop("shoot3");
-        Crafty.audio.play("shoot3");
+        Crafty.audio.stop(this.audioFiles.SHOOT3());
+        Crafty.audio.play(this.audioFiles.SHOOT3());
 
         var _x = this.x;
         var _y = this.y;
@@ -189,16 +192,16 @@ Crafty.c("Player", {
 
     startEngine: function () {
         this.engineStarted = true;
-        Crafty.audio.stop("engine-idle");
-        Crafty.audio.play("engine-idle", -1, 0.5);
+        Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
+        Crafty.audio.play(this.audioFiles.ENGINE_IDLE(), -1, 0.5);
 
         return this;
     },
 
     stopEngine: function () {
         this.engineStarted = false;
-        Crafty.audio.stop("engine");
-        Crafty.audio.stop("engine-idle");
+        Crafty.audio.stop(this.audioFiles.ENGINE());
+        Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
         window.clearInterval(this._movementInterval);
         return this;
     },
@@ -211,11 +214,11 @@ Crafty.c("Player", {
         }
     },
 
-    audio: {
-        ENGINE: function(){ return "engine" + this._sessionId; },
-        ENGINE_IDLE: function(){ return "engine-idle" + this._sessionId; },
-        SHOOT: function(){ return "shoot" + this._sessionId; },
-        SHOOT3: function(){ return "shoot3" + this._sessionId; },
+    audioFiles: {
+        ENGINE: function(){ return "engine_" + this._sessionId; },
+        ENGINE_IDLE: function(){ return "engine-idle_" + this._sessionId; },
+        SHOOT: function(){ return "shoot_" + this._sessionId; },
+        SHOOT3: function(){ return "shoot3_" + this._sessionId; },
     },
 });
 

@@ -33,27 +33,10 @@
 
 		var players = {};
 
-		var assets = {
-			"audio": {
-				"weapon": "weapon.wav"
-			}
-		}
-
 		var boardWidth = 1024;
 		var boardHeight = 768;
 
 		Crafty.init(boardWidth, boardHeight, document.getElementById('game'));
-
-		Crafty.audio.add("shoot", "asset/sound/shoot/shoot003.mp3");
-		Crafty.audio.add("shoot3", "asset/sound/shoot/shoot002.mp3");
-		Crafty.audio.add("engine-idle", "asset/sound/engine/090913-009.mp3");
-		Crafty.audio.add("engine", "asset/sound/engine/090913-002.mp3");
-
-		//Crafty.load({assets,  onLoad})
-
-		function onLoad() {
-
-		}
 
 		function createControllablePlayer() {
 			var playerColor = document.getElementById("renk").value;
@@ -68,6 +51,8 @@
 				x: player.x,
 				y: player.y
 			});
+
+			player.startEngine();
 		}
 
 		socket.on("newPlayerJoined", function (newPlayerInfo) {
