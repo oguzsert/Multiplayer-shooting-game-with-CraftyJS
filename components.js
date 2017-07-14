@@ -66,6 +66,20 @@ Crafty.c("ControlablePlayer", {
         this.movingBackward = false;
 		var that =this;
 		this.onSocketBinded = function(socket){
+			
+			setInterval(function(){
+				socket.emit("correction",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId});
+			},500);
+			
+			socket.on("player-correction",function(correctionData){
+				console.log(that._playerId,that.name,"CORRECTION",correctionData.id);
+				if(correctionData.id == that._playerId){
+					that.x = correctionData.x;
+					that.y = correctionData.y;
+					that.rotation = correctionData.rotation;
+				}
+			});
+			
 			socket.on("player-engine-on",function(id){
 				console.log(that._playerId,that.name,"ENGINE-ON",id);
 				if(id == that._playerId){
