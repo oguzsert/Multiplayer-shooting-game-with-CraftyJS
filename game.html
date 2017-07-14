@@ -15,8 +15,14 @@
 	</style>
 	<input type="text" placeholder="nick" id="nick" value="Keke">
 	<input type="text" placeholder="renk" id="renk" value="red">
-	<div onclick="createControllablePlayer()" id="createbutton">Oyuncu Oluştur</div>
-	<div id="game" style="border:1px dotted #000;"></div>	
+	<div>
+		<div style="float:left" onclick="createControllablePlayer()" id="createbutton">Oyuncu Oluştur</div>
+		<div style="float:left;margin-left:10px" id="msg">engine on/off: press E</div>
+	</div>
+	<div style="clear:both"></div>
+	
+	<div id="game" style="border:1px dotted #000;"></div>
+	
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./components.js"></script>
 	<script type="text/javascript" src="./socket.io.js"></script>
@@ -26,7 +32,27 @@
 		
 		var players = {};
 
-		Crafty.init(1024, 768, document.getElementById('game'));
+		var assets = {
+			"audio": {
+					"weapon": "weapon.wav"
+			}
+		}
+
+		var boardWidth = 1024;
+		var boardHeight = 768;
+
+		Crafty.init(boardWidth, boardHeight, document.getElementById('game'));
+
+		Crafty.audio.add("shoot", "asset/sound/shoot/shoot003.mp3");
+		Crafty.audio.add("shoot3", "asset/sound/shoot/shoot002.mp3");
+		Crafty.audio.add("engine-idle", "asset/sound/engine/090913-009.mp3");
+		Crafty.audio.add("engine", "asset/sound/engine/090913-002.mp3");
+		
+		//Crafty.load({assets,  onLoad})
+
+		function onLoad(){
+			
+		}
 
 		function createControllablePlayer(){
 		    var playerColor = document.getElementById("renk").value;
@@ -41,6 +67,7 @@
 						y:player.y
 					}
 				);
+
 		}
 		
 		socket.on("newPlayerJoined",function(newPlayerInfo){
@@ -54,11 +81,11 @@
 										.setName(nick)
 										.showName()
 										.color(color)	
-										.addWeapon('rifle')
-										.place(0, 0)
-										.setId(id);
-										
+										.addWeapon('rifle')										
+										.setId(id);										
 			players[player._playerId] = player;
+			player.place(50, boardHeight / 2);
+
 			return player;
 		}
 		
