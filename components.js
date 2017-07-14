@@ -49,11 +49,7 @@ Crafty.c("ControlablePlayer", {
 
         this.bind('KeyDown', function (e) {
             if (e.key == Crafty.keys.E) {
-                if (!this.engineStarted) {
-                    this.startEngine();
-                } else {
-                    this.stopEngine();
-                }
+                this.toggleEngine();
             } else if (e.key == Crafty.keys.LEFT_ARROW) {
                 this.rotatePlayer("left");
             } else if (e.key == Crafty.keys.RIGHT_ARROW) {
@@ -63,7 +59,8 @@ Crafty.c("ControlablePlayer", {
             } else if (e.key == Crafty.keys.DOWN_ARROW) {
                 this.movePlayer("backward");
             } else if (e.key == Crafty.keys.SPACE) {
-                this.shoot();
+                //this.shoot();
+                this.startShoot(this.shoot);
             } else if (e.key == Crafty.keys.X) {
                 this.shoot3();
             }
@@ -78,16 +75,19 @@ Crafty.c("ControlablePlayer", {
                 this.movePlayer("stopMovement");
             } else if (e.key == Crafty.keys.DOWN_ARROW) {
                 this.movePlayer("stopMovement");
+            } else if (e.key == Crafty.keys.SPACE) {
+                this.stopShoot();
             }
         });
     },
 
-    movePlayer: function (direction, _player) {
-        console.log(direction);
+    movePlayer: function (direction) {
 
         window.clearInterval(this._movementInterval);
 
         if (!this.engineStarted) return;
+
+        console.log(direction);
 
         if (direction == "stopMovement") {
             this.movingForward = false;
@@ -162,15 +162,32 @@ Crafty.c("ControlablePlayer", {
         var _y = this.y;
         var _rotation = this.rotation;
 
-        _x += (2 * Math.cos(_rotation * Math.PI / 180));
-        _y += (2 * Math.sin(_rotation * Math.PI / 180)) + 4;
+        var speed = 3;
 
-        var bullet = Crafty.e("2D, Canvas, Color, Tween").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation }).color("orange");
+        var incrementX = speed * Math.cos(_rotation * Math.PI / 180);
+        var incrementY = speed * Math.sin(_rotation * Math.PI / 180)
 
+        _x += incrementX;
+        _y += incrementY + 4;
+
+        var bullet = Crafty.e("2D, Canvas, Color, Tween").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: _rotation }).color("orange");
+        
         window.setInterval(function () {
-            bullet.x += 3 * Math.cos(_rotation * Math.PI / 180);
-            bullet.y += 3 * Math.sin(_rotation * Math.PI / 180);
+            bullet.x += incrementX;
+            bullet.y += incrementY;
         }, 1);
+    },
+
+    startShoot: function (shooter) {
+        shooter.apply(this);
+        var that = this;
+        this.autoShootInterval = window.setInterval(function () {
+            shooter.apply(that);
+        }, 200);
+    },
+
+    stopShoot: function () {
+        window.clearInterval(this.autoShootInterval);
     },
 
     shoot3: function () {
@@ -181,24 +198,26 @@ Crafty.c("ControlablePlayer", {
         var _y = this.y;
         var _rotation = this.rotation;
 
-        _x += (2 * Math.cos(_rotation * Math.PI / 180));
-        _y += (2 * Math.sin(_rotation * Math.PI / 180)) + 4;
+        var speed = 1;
 
-        var bullet1 = Crafty.e("2D, Canvas, Color, Tween").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation }).color("orange");
-        var bullet2 = Crafty.e("2D, Canvas, Color, Tween").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation + 45 }).color("orange");
-        var bullet3 = Crafty.e("2D, Canvas, Color, Tween").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation - 45 }).color("orange");
+        _x += (16 * Math.cos(_rotation * Math.PI / 180));
+        _y += (16 * Math.sin(_rotation * Math.PI / 180)) + 4;
+
+        var bullet1 = Crafty.e("2D, Canvas, Color").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation }).color("orange");
+        var bullet2 = Crafty.e("2D, Canvas, Color").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation + 45 }).color("orange");
+        var bullet3 = Crafty.e("2D, Canvas, Color").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation - 45 }).color("orange");
 
         window.setInterval(function () {
-            var v = 0.5;
-            bullet1.x += v * Math.cos(bullet1.rotation * Math.PI / 180);
-            bullet1.y += v * Math.sin(bullet1.rotation * Math.PI / 180);
 
-            bullet2.x += v * Math.cos(bullet2.rotation * Math.PI / 180);
-            bullet2.y += v * Math.sin(bullet2.rotation * Math.PI / 180);
+            bullet1.x += speed * Math.cos(bullet1.rotation * Math.PI / 180);
+            bullet1.y += speed * Math.sin(bullet1.rotation * Math.PI / 180);
 
-            bullet3.x += v * Math.cos(bullet3.rotation * Math.PI / 180);
-            bullet3.y += v * Math.sin(bullet3.rotation * Math.PI / 180);
-        }, 1);
+            bullet2.x += speed * Math.cos(bullet2.rotation * Math.PI / 180);
+            bullet2.y += speed * Math.sin(bullet2.rotation * Math.PI / 180);
+
+            bullet3.x += speed * Math.cos(bullet3.rotation * Math.PI / 180);
+            bullet3.y += speed * Math.sin(bullet3.rotation * Math.PI / 180);
+        }, 5);
     },
 
     startEngine: function () {
@@ -216,5 +235,13 @@ Crafty.c("ControlablePlayer", {
         window.clearInterval(this._movementInterval);
         return this;
     },
+
+    toggleEngine: function () {
+        if (!this.engineStarted) {
+            this.startEngine();
+        } else {
+            this.stopEngine();
+        }
+    }
 
 });
