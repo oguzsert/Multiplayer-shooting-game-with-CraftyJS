@@ -40,7 +40,14 @@ Crafty.c("Player", {
     showName: function(name) {
         this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor('black').textFont({ size: '11px', weight: 'bold' }));
         return this;
-    }
+    },
+	
+	setId: function(id){
+		if(id !== undefined){
+			this._playerId = id;
+		}
+		return this;
+	}
 });
 
 Crafty.c("ControlablePlayer", {

@@ -16,36 +16,53 @@
 	<input type="text" placeholder="nick" id="nick" value="Keke">
 	<input type="text" placeholder="renk" id="renk" value="red">
 	<div onclick="createControllablePlayer()" id="createbutton">Oyuncu Oluştur</div>
-
-	<div id="game" style="border:1px dotted #000;"></div>
-	
+	<div id="game" style="border:1px dotted #000;"></div>	
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./components.js"></script>
+	<script type="text/javascript" src="./socket.io.js"></script>
   <script>
+  
+		var socket = io('http://192.168.6.80:3000');
+		
 		var players = {};
 
 		Crafty.init(1024, 768, document.getElementById('game'));
 
 		function createControllablePlayer(){
 		    var playerColor = document.getElementById("renk").value;
-				var playerNick = document.getElementById("nick").value;
-					
+				var playerNick = document.getElementById("nick").value;					
 				var player = createPlayer(playerNick, playerColor);
-						
-				players[player._playerId] = player;
+													
+				socket.emit("createPlayerOnServer",{
+						nick:playerNick,
+						color:playerColor,
+						id:player._playerId,
+						x:player.x,
+						y:player.y
+					}
+				);
 		}
 		
-		function createPlayer(nick, color){
+		socket.on("newPlayerJoined",function(newPlayerInfo){
+				console.log("new-player-joined");
+				createPlayer(newPlayerInfo.nick,newPlayerInfo.color,newPlayerInfo.id);
+		});
+		
+		function createPlayer(nick, color,id){
 			
 			var player = Crafty.e("ControlablePlayer")
 										.setName(nick)
 										.showName()
 										.color(color)	
 										.addWeapon('rifle')
-										.place(0, 0);
-			
+										.place(0, 0)
+										.setId(id);
+										
+			players[player._playerId] = player;
 			return player;
 		}
+		
+		
 		
     </script>
   </body>
