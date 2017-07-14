@@ -1,12 +1,12 @@
 var server = require('http').createServer();
 var io = require('socket.io')(server);
 
-var players = {}
+
 
 io.on('connection', function(client){
 
 	client.on("createPlayerOnServer",function(player){
-		players[player.id] = player;		
+			
 		client.broadcast.emit("newPlayerJoined",player);
 	});
 	
@@ -40,6 +40,11 @@ io.on('connection', function(client){
 	
 	client.on("stop-rotate",function(playerId){		
 		client.broadcast.emit("player-rotate-stop",playerId);
+	});
+	
+	client.on("shoot",function(playerId){
+		client.broadcast.emit("player-shoot",playerId);
+		
 	});
   
   

@@ -9,8 +9,12 @@ Crafty.c("Player", {
         this.h = 16;
         this.z = 10;
         this.rotation = 0;
+		this.controllable = false;
     },
-
+	setControlFlag:function(controlFlag){
+		this.controllable = controlFlag;	
+		return this;
+	},
     place: function (x, y) {
         this.x = x;
         this.y = y;
@@ -77,7 +81,7 @@ Crafty.c("ControlablePlayer", {
 			});
 			
 			socket.on("player-move-forward",function(id){
-				console.log(that._playerId,that.name,"MOVING-FORWARD");
+				console.log(that._playerId,that.name,"MOVING-FORWARD",id);
 				if(id == that._playerId){
 					that.movePlayer("forward");
 				}
@@ -85,7 +89,7 @@ Crafty.c("ControlablePlayer", {
 			
 			
 			socket.on("player-move-backward",function(id){
-				console.log(that._playerId,that.name,"MOVING-BACKWARD");
+				console.log(that._playerId,that.name,"MOVING-BACKWARD",id);
 				if(id == that._playerId){
 					that.movePlayer("backward");
 				}
@@ -93,14 +97,14 @@ Crafty.c("ControlablePlayer", {
 			
 			
 			socket.on("player-stop-movement",function(id){
-				console.log(that._playerId,that.name,"STOP-MOVEMENT");
+				console.log(that._playerId,that.name,"STOP-MOVEMENT",id);
 				if(id == that._playerId){
 					that.movePlayer("stopMovement");
 				}
 			});
 			
 			socket.on("player-rotate-right",function(id){
-				console.log(that._playerId,that.name,"ROTATE-RIGHT");
+				console.log(that._playerId,that.name,"ROTATE-RIGHT",id);
 				if(id == that._playerId){
 					that.rotatePlayer("right");
 				}
@@ -108,7 +112,7 @@ Crafty.c("ControlablePlayer", {
 			
 			
 			socket.on("player-rotate-left",function(id){
-				console.log(that._playerId,that.name,"ROTATE-LEFT");
+				console.log(that._playerId,that.name,"ROTATE-LEFT",id);
 				if(id == that._playerId){
 					that.rotatePlayer("left");
 				}
@@ -116,9 +120,16 @@ Crafty.c("ControlablePlayer", {
 			
 			
 			socket.on("player-rotate-stop",function(id){
-				console.log(that._playerId,that.name,"ROTATE-STOP");
+				console.log(that._playerId,that.name,"ROTATE-STOP",id);
 				if(id == that._playerId){
 					that.rotatePlayer("stopRotate");
+				}
+			});
+			
+				socket.on("player-shoot",function(id){
+				console.log(that._playerId,that.name,"PLAYER-SHOOT",id);
+				if(id == that._playerId){
+					that.shoot();
 				}
 			});
 			
@@ -128,6 +139,9 @@ Crafty.c("ControlablePlayer", {
 	
 
         this.bind('KeyDown', function (e) {
+			if(!this.controllable){
+				return false;
+			}
             if (e.key == Crafty.keys.E) {
                 if (!this.engineStarted) {
                     this.startEngine();
@@ -149,13 +163,17 @@ Crafty.c("ControlablePlayer", {
 				this.socket.emit("move-backward",this._playerId);
                 this.movePlayer("backward");
             } else if (e.key == Crafty.keys.SPACE) {
+				this.socket.emit("shoot",this._playerId);
                 this.shoot();
             } else if (e.key == Crafty.keys.X) {
                 this.shoot3();
             }
         });
 
-        this.bind('KeyUp', function (e) {			
+        this.bind('KeyUp', function (e) {		
+			if(!this.controllable){
+				return false;
+			}		
             if (e.key == Crafty.keys.LEFT_ARROW) {
 				this.socket.emit("stop-rotate",this._playerId);
                 this.rotatePlayer("stopRotate");

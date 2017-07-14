@@ -57,7 +57,7 @@
 		function createControllablePlayer(){
 		    var playerColor = document.getElementById("renk").value;
 				var playerNick = document.getElementById("nick").value;					
-				var player = createPlayer(playerNick, playerColor);
+				var player = createPlayer(playerNick, playerColor,undefined,true);
 				
 				socket.emit("createPlayerOnServer",{
 						nick:playerNick,
@@ -72,11 +72,11 @@
 		
 		socket.on("newPlayerJoined",function(newPlayerInfo){
 				console.log("new-player-joined");
-				createPlayer(newPlayerInfo.nick,newPlayerInfo.color,newPlayerInfo.id);
+				createPlayer(newPlayerInfo.nick,newPlayerInfo.color,newPlayerInfo.id,false);
 		});
 				
 		
-		function createPlayer(nick, color,id){
+		function createPlayer(nick, color,id,_isControllable){
 			
 			var player = Crafty.e("ControlablePlayer")
 										.setName(nick)
@@ -85,7 +85,9 @@
 										.addWeapon('rifle')										
 										.setId(id)
 										.place(0,0)
-										.bindSocket(socket);										
+										.bindSocket(socket)
+										.setControlFlag(_isControllable);
+										
 			players[player._playerId] = player;
 			
 
