@@ -1,0 +1,125 @@
+<html>
+  <head></head>
+  <body style="font-family:tahoma;">
+	<style>
+	#createbutton{
+		width:150px;
+		height:15px;
+		background-color:#efefef;
+		text-align:center;
+		padding:10px;
+		cursor:pointer;
+		margin-bottom:5px;
+		margin-top:5px;
+	}
+	</style>
+	<input type="text" placeholder="nick" id="nick" value="Keke">
+	<input type="text" placeholder="renk" id="renk" value="red">
+	<div onclick="createControllablePlayer()" id="createbutton">Oyuncu Oluştur</div>
+    <div id="game" style="border:1px dotted #000;"></div>
+    <script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
+    <script>
+		Crafty.init(1024,768, document.getElementById('game'));
+		var createdPlayer = {};
+		var players = {};
+		function createControllablePlayer(){
+		    var playerColor = document.getElementById("renk").value;
+			var playerNick = document.getElementById("nick").value;
+			var _id = new Date().getTime();
+			createdPlayer = createPlayer(playerColor,playerNick,_id);
+			createdPlayer
+			.bind('KeyDown', function(e) {
+				if(e.key == Crafty.keys.LEFT_ARROW) {
+					rotatePlayer("left",this);
+				} else if (e.key == Crafty.keys.RIGHT_ARROW) {
+					rotatePlayer("right",this);
+				} else if (e.key == Crafty.keys.UP_ARROW) {
+				  movePlayer("forward",this);
+				} else if (e.key == Crafty.keys.DOWN_ARROW) {
+				  movePlayer("backward",this);
+				} else if(e.key == Crafty.keys.SPACE)	{
+					shoot(this);
+				}
+				
+		    })
+			.bind('KeyUp', function(e) {
+				if(e.key == Crafty.keys.LEFT_ARROW) {
+					rotatePlayer("stopRotate",this);
+				} else if (e.key == Crafty.keys.RIGHT_ARROW) {
+					rotatePlayer("stopRotate",this);
+				} else if (e.key == Crafty.keys.UP_ARROW) {
+					movePlayer("stopMovement",this);
+				} else if (e.key == Crafty.keys.DOWN_ARROW) {
+					movePlayer("stopMovement",this);
+				}								
+		    });
+			
+			
+			
+		}
+		
+		
+		function createPlayer(playerColor,playerNick,_id){
+			var player = Crafty.e("2D, Canvas, Color, Tween").attr({x:0, y:0, w:16, h:16,z:1,rotation:0}).color(playerColor);
+			var rifle = Crafty.e("2D, Canvas, Color").attr({x:16, y:5, w:8, h:5,z:2}).color("red");
+			player.attach(rifle);
+			player.attach(Crafty.e("2D, DOM, Text").attr({ x: 10, y: 20 }).text(playerNick).textColor(playerColor).textFont({ size: '13px', weight: 'bold' }));
+		    player.origin('center');
+			players[_id] = player;
+			return player;
+		
+		}
+		
+
+		function shoot(_player){
+			var _x = _player.x;
+			var _y = _player.y;
+			var _rotation = _player.rotation;
+			_x += (2 * Math.cos(_rotation * Math.PI / 180))+16;
+			_y += (2 * Math.sin(_rotation * Math.PI / 180))+16;
+			var bullet = Crafty.e("2D, Canvas, Color, Tween").attr({x:_x, y:_y, w:8, h:8,z:1,rotation:_player.rotation}).color("orange");			
+			window.setInterval(function(){									
+						bullet.x += 2 * Math.cos(_rotation * Math.PI / 180);
+						bullet.y += 2 * Math.sin(_rotation * Math.PI / 180);										
+			},1);
+		}
+		
+		function movePlayer(direction,_player){	
+			console.log(direction);
+			 window.clearInterval(_player.movementInterval);
+			 if(direction == "stopMovement"){
+					return;
+			}
+			_player.movementInterval = window.setInterval(function(){
+					
+					if(direction == "forward"){						
+						_player.x += 2 * Math.cos(_player.rotation * Math.PI / 180);
+						_player.y += 2 * Math.sin(_player.rotation * Math.PI / 180);
+					}
+					else if(direction == "backward"){
+						_player.x -= 2 * Math.cos(_player.rotation * Math.PI / 180);
+						_player.y -= 2 * Math.sin(_player.rotation * Math.PI / 180);
+					}
+			},1);
+		}
+		
+		function rotatePlayer(direction,_player){
+				window.clearInterval(_player.rotateInterval);
+			    if(direction == "stopRotate"){
+					return;
+				}
+				_player.rotateInterval = window.setInterval(function(){
+					
+					if(direction == "right"){
+						_player.rotation += 0.5;
+					}
+					else if(direction == "left"){
+						_player.rotation -= 0.5;
+					}
+				},1);
+			
+		}
+		
+    </script>
+  </body>
+</html>
