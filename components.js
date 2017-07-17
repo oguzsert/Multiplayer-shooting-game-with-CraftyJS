@@ -27,8 +27,8 @@ Crafty.c("Player", {
         this.bind("EnterFrame", function(frame){
             if(frame.frame % 5 == 0){
                 if(this.isShooting){
-                    this.socket.emit("shoot", this._playerId);
-                    this.shoot();
+                   this.socket.emit("shoot", {x:this.x,y:this.y,rotation:this.rotation,id:this._playerId,playerId:this._playerId});
+                   this.shoot();
                 }
             }
         });
@@ -150,10 +150,10 @@ Crafty.c("Player", {
 
         this._rotateInterval = window.setInterval(function () {
             if (direction == "right") {
-                that.rotation += 0.3;
+                that.rotation += 0.5;
             }
             else if (direction == "left") {
-                that.rotation -= 0.3;
+                that.rotation -= 0.5;
             }
         }, 1);
     },
@@ -263,24 +263,24 @@ Crafty.c("MyPlayer", {
         this.onSocketBinded = function (socket) {
             var that = this;
 
-            setInterval(function () {
-                socket.emit("correction", { x: that.x, y: that.y, rotation: that.rotation, id: that._playerId });
-            }, 1000);
-
+			
 			
 			this.checkHits('Bullet').bind("HitOn", function(hitData) {
 				var bulletOwnerId = hitData[0].obj.ownerId;
 				if(this._playerId != bulletOwnerId){
-					this.socket.emit("die",this._playerId);
+					this.socket.emit("die",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
 					this.die();			
 				}
 			});				
         }
 
         this.bind('KeyDown', function (e) {
+			
+			
+			var that = this;			 		
 			if (e.key == Crafty.keys.HOME && !this.isActive) {
 				this.respawn();
-				this.socket.emit("respawn",this._playerId);
+				this.socket.emit("respawn",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
 			};			
 			if(!this.isActive){
 				return false;
@@ -288,22 +288,22 @@ Crafty.c("MyPlayer", {
             if (e.key == Crafty.keys.E) {
                 if (!this.engineStarted) {
                     this.startEngine();
-                    this.socket.emit("engine-on", this._playerId);
+                    this.socket.emit("engine-on", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 } else {
                     this.stopEngine();
-                    this.socket.emit("engine-off", this._playerId);
+                    this.socket.emit("engine-off", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 }
             } else if (e.key == Crafty.keys.LEFT_ARROW) {
-                this.socket.emit("rotate-left", this._playerId);
+                this.socket.emit("rotate-left", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.rotatePlayer("left");
             } else if (e.key == Crafty.keys.RIGHT_ARROW) {
                 this.rotatePlayer("right");
-                this.socket.emit("rotate-right", this._playerId);
+                this.socket.emit("rotate-right", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
             } else if (e.key == Crafty.keys.UP_ARROW) {
-                this.socket.emit("move-forward", this._playerId);
+                this.socket.emit("move-forward", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.movePlayer("forward");
             } else if (e.key == Crafty.keys.DOWN_ARROW) {
-                this.socket.emit("move-backward", this._playerId);
+                this.socket.emit("move-backward", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.movePlayer("backward");
             } else if (e.key == Crafty.keys.SPACE) {                
                 this.startShoot();
@@ -313,22 +313,22 @@ Crafty.c("MyPlayer", {
         });
 
         this.bind('KeyUp', function (e) {
-
+			var that = this;
 			if(!this.isActive){
 				return false;
 			}
 
             if (e.key == Crafty.keys.LEFT_ARROW) {
-                this.socket.emit("stop-rotate", this._playerId);
+                this.socket.emit("stop-rotate", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.rotatePlayer("stopRotate");
             } else if (e.key == Crafty.keys.RIGHT_ARROW) {
-                this.socket.emit("stop-rotate", this._playerId);
+                this.socket.emit("stop-rotate", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.rotatePlayer("stopRotate");
             } else if (e.key == Crafty.keys.UP_ARROW) {
-                this.socket.emit("stop-movement", this._playerId);
+                this.socket.emit("stop-movement", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.movePlayer("stopMovement");
             } else if (e.key == Crafty.keys.DOWN_ARROW) {
-                this.socket.emit("stop-movement", this._playerId);
+                this.socket.emit("stop-movement", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.movePlayer("stopMovement");
             } else if (e.key == Crafty.keys.SPACE) {
                 this.stopShoot();
@@ -354,81 +354,148 @@ Crafty.c("OtherPlayer", {
         this.onSocketBinded = function (socket) {
             var that = this;
 
-            socket.on("player-correction", function (correctionData) {
-                console.log(that._playerId, that.name, "CORRECTION", correctionData.id);
-                if (correctionData.id == that._playerId) {
-                    that.x = correctionData.x;
-                    that.y = correctionData.y;
-                    that.rotation = correctionData.rotation;
-                }
-            });
+        
 
-            socket.on("player-engine-on", function (id) {
-                console.log(that._playerId, that.name, "ENGINE-ON", id);
-                if (id == that._playerId) {
+            socket.on("player-engine-on", function (playerInfo) {
+                console.log(that._playerId, that.name, "ENGINE-ON", playerInfo);
+                if (playerInfo.playerId == that._playerId) {
                     that.startEngine();
+					
+					that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
+					
                 }
             });
 
-            socket.on("player-engine-off", function (id) {
-                console.log(that._playerId, that.name, "ENGINE-OFF", id);
-                if (id == that._playerId) {
+            socket.on("player-engine-off", function (playerInfo) {
+                console.log(that._playerId, that.name, "ENGINE-OFF", playerInfo);
+                if (playerInfo.playerId == that._playerId) {
                     that.stopEngine();
+						that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
                 }
             });
 
-            socket.on("player-move-forward", function (id) {
-                console.log(that._playerId, that.name, "MOVING-FORWARD", id);
-                if (id == that._playerId) {
+            socket.on("player-move-forward", function (playerInfo) {
+                console.log(that._playerId, that.name, "MOVING-FORWARD", playerInfo);
+                 if (playerInfo.playerId == that._playerId) {
+					 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
                     that.movePlayer("forward");
+					
                 }
             });
             
+<<<<<<< HEAD
 			socket.on("player-die",function(id){
 				console.log(that._playerId,that.name,"DIED",id);
 				if(id == that._playerId){
+=======
+			socket.on("player-engine-on",function(playerInfo){
+				console.log(that._playerId,that.name,"ENGINE-ON",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
+					that.startEngine();
+				}
+			});
+		
+			socket.on("player-engine-off",function(playerInfo){
+				console.log(that._playerId,that.name,"ENGINE-OFF",playerInfo);
+			 if (playerInfo.playerId == that._playerId) {
+				 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
+					that.stopEngine();
+				}
+			});
+			
+			socket.on("player-move-forward",function(playerInfo){				
+				 if (playerInfo.playerId == that._playerId) {	
+	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;				 
+					that.movePlayer("forward");
+				}
+			});
+			
+			socket.on("player-move-backward",function(playerInfo){
+				console.log(that._playerId,that.name,"MOVING-BACKWARD",playerInfo);
+			 if (playerInfo.playerId == that._playerId) {
+				 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
+					that.movePlayer("backward");
+				}
+			});
+			
+			socket.on("player-die",function(playerInfo){
+				console.log(that._playerId,that.name,"DIED",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 
+>>>>>>> df0feae511c1c971f85f14804a5772d865d8218a
 					that.die();
 				}
 			});
 			
-			socket.on("player-respawn",function(id){
-				console.log(that._playerId,that.name,"PLAYER-RESPAWN",id);
-				if(id == that._playerId){
+			socket.on("player-respawn",function(playerInfo){
+				console.log(that._playerId,that.name,"PLAYER-RESPAWN",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 
 					that.respawn();
 				}
 			});
 			
-			socket.on("player-stop-movement",function(id){
-				console.log(that._playerId,that.name,"STOP-MOVEMENT",id);
-				if(id == that._playerId){
+			socket.on("player-stop-movement",function(playerInfo){
+				console.log(that._playerId,that.name,"STOP-MOVEMENT",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
 					that.movePlayer("stopMovement");
 				}
 			});
 			
-			socket.on("player-rotate-right",function(id){
-				console.log(that._playerId,that.name,"ROTATE-RIGHT",id);
-				if(id == that._playerId){
+			socket.on("player-rotate-right",function(playerInfo){
+				console.log(that._playerId,that.name,"ROTATE-RIGHT",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
 					that.rotatePlayer("right");
 				}
 			});
 			
-			socket.on("player-rotate-left",function(id){
-				console.log(that._playerId,that.name,"ROTATE-LEFT",id);
-				if(id == that._playerId){
+			socket.on("player-rotate-left",function(playerInfo){
+				console.log(that._playerId,that.name,"ROTATE-LEFT",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
 					that.rotatePlayer("left");
 				}
 			});
 			
-			socket.on("player-rotate-stop",function(id){
-				console.log(that._playerId,that.name,"ROTATE-STOP",id);
-				if(id == that._playerId){
+			socket.on("player-rotate-stop",function(playerInfo){
+				console.log(that._playerId,that.name,"ROTATE-STOP",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
 					that.rotatePlayer("stopRotate");
 				}
 			});
 			
-            socket.on("player-shoot",function(id){
-				console.log(that._playerId,that.name,"PLAYER-SHOOT",id);
-				if(id == that._playerId){
+            socket.on("player-shoot",function(playerInfo){
+				console.log(that._playerId,that.name,"PLAYER-SHOOT",playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+					 	that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
 					that.shoot();
 				}
 			});					
