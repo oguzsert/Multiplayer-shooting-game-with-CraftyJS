@@ -27,7 +27,6 @@ Crafty.c("Player", {
         this.bind("EnterFrame", function(frame){
             if(frame.frame % 5 == 0){
                 if(this.isShooting){
-                   this.socket.emit("shoot", {x:this.x,y:this.y,rotation:this.rotation,id:this._playerId,playerId:this._playerId});
                    this.shoot();
                 }
             }
@@ -316,7 +315,7 @@ Crafty.c("MyPlayer", {
         this.bind('KeyUp', function (e) {
             
             var that = this;
-            
+
 			if(!this.isActive){
 				return false;
 			}
