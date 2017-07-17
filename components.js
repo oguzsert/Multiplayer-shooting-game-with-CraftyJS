@@ -352,48 +352,8 @@ Crafty.c("OtherPlayer", {
         this.socket = null;
 
         this.onSocketBinded = function (socket) {
-            var that = this;
+            var that = this;    
 
-        
-
-            socket.on("player-engine-on", function (playerInfo) {
-                console.log(that._playerId, that.name, "ENGINE-ON", playerInfo);
-                if (playerInfo.playerId == that._playerId) {
-                    that.startEngine();
-					
-					that.x = playerInfo.x;
-                    that.y = playerInfo.y;
-                    that.rotation = playerInfo.rotation;
-					
-                }
-            });
-
-            socket.on("player-engine-off", function (playerInfo) {
-                console.log(that._playerId, that.name, "ENGINE-OFF", playerInfo);
-                if (playerInfo.playerId == that._playerId) {
-                    that.stopEngine();
-						that.x = playerInfo.x;
-                    that.y = playerInfo.y;
-                    that.rotation = playerInfo.rotation;
-                }
-            });
-
-            socket.on("player-move-forward", function (playerInfo) {
-                console.log(that._playerId, that.name, "MOVING-FORWARD", playerInfo);
-                 if (playerInfo.playerId == that._playerId) {
-					 	that.x = playerInfo.x;
-                    that.y = playerInfo.y;
-                    that.rotation = playerInfo.rotation;
-                    that.movePlayer("forward");
-					
-                }
-            });
-            
-<<<<<<< HEAD
-			socket.on("player-die",function(id){
-				console.log(that._playerId,that.name,"DIED",id);
-				if(id == that._playerId){
-=======
 			socket.on("player-engine-on",function(playerInfo){
 				console.log(that._playerId,that.name,"ENGINE-ON",playerInfo);
 				 if (playerInfo.playerId == that._playerId) {
@@ -416,7 +376,7 @@ Crafty.c("OtherPlayer", {
 			
 			socket.on("player-move-forward",function(playerInfo){				
 				 if (playerInfo.playerId == that._playerId) {	
-	that.x = playerInfo.x;
+	                that.x = playerInfo.x;
                     that.y = playerInfo.y;
                     that.rotation = playerInfo.rotation;				 
 					that.movePlayer("forward");
@@ -435,17 +395,14 @@ Crafty.c("OtherPlayer", {
 			
 			socket.on("player-die",function(playerInfo){
 				console.log(that._playerId,that.name,"DIED",playerInfo);
-				 if (playerInfo.playerId == that._playerId) {
-					 
->>>>>>> df0feae511c1c971f85f14804a5772d865d8218a
+				 if (playerInfo.playerId == that._playerId) {					 
 					that.die();
 				}
 			});
 			
 			socket.on("player-respawn",function(playerInfo){
 				console.log(that._playerId,that.name,"PLAYER-RESPAWN",playerInfo);
-				 if (playerInfo.playerId == that._playerId) {
-					 
+				 if (playerInfo.playerId == that._playerId) {					 
 					that.respawn();
 				}
 			});
@@ -453,7 +410,7 @@ Crafty.c("OtherPlayer", {
 			socket.on("player-stop-movement",function(playerInfo){
 				console.log(that._playerId,that.name,"STOP-MOVEMENT",playerInfo);
 				 if (playerInfo.playerId == that._playerId) {
-					 	that.x = playerInfo.x;
+                    that.x = playerInfo.x;
                     that.y = playerInfo.y;
                     that.rotation = playerInfo.rotation;
 					that.movePlayer("stopMovement");
@@ -463,7 +420,7 @@ Crafty.c("OtherPlayer", {
 			socket.on("player-rotate-right",function(playerInfo){
 				console.log(that._playerId,that.name,"ROTATE-RIGHT",playerInfo);
 				 if (playerInfo.playerId == that._playerId) {
-					 	that.x = playerInfo.x;
+                    that.x = playerInfo.x;
                     that.y = playerInfo.y;
                     that.rotation = playerInfo.rotation;
 					that.rotatePlayer("right");
@@ -473,7 +430,7 @@ Crafty.c("OtherPlayer", {
 			socket.on("player-rotate-left",function(playerInfo){
 				console.log(that._playerId,that.name,"ROTATE-LEFT",playerInfo);
 				 if (playerInfo.playerId == that._playerId) {
-					 	that.x = playerInfo.x;
+                    that.x = playerInfo.x;
                     that.y = playerInfo.y;
                     that.rotation = playerInfo.rotation;
 					that.rotatePlayer("left");
@@ -483,7 +440,7 @@ Crafty.c("OtherPlayer", {
 			socket.on("player-rotate-stop",function(playerInfo){
 				console.log(that._playerId,that.name,"ROTATE-STOP",playerInfo);
 				 if (playerInfo.playerId == that._playerId) {
-					 	that.x = playerInfo.x;
+                    that.x = playerInfo.x;
                     that.y = playerInfo.y;
                     that.rotation = playerInfo.rotation;
 					that.rotatePlayer("stopRotate");
@@ -493,7 +450,7 @@ Crafty.c("OtherPlayer", {
             socket.on("player-shoot",function(playerInfo){
 				console.log(that._playerId,that.name,"PLAYER-SHOOT",playerInfo);
 				 if (playerInfo.playerId == that._playerId) {
-					 	that.x = playerInfo.x;
+                    that.x = playerInfo.x;
                     that.y = playerInfo.y;
                     that.rotation = playerInfo.rotation;
 					that.shoot();
