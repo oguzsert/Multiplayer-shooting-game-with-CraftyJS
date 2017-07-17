@@ -263,8 +263,6 @@ Crafty.c("MyPlayer", {
         this.onSocketBinded = function (socket) {
             var that = this;
 
-			
-			
 			this.checkHits('Bullet').bind("HitOn", function(hitData) {
 				var bulletOwnerId = hitData[0].obj.ownerId;
 				if(this._playerId != bulletOwnerId){
@@ -276,15 +274,17 @@ Crafty.c("MyPlayer", {
 
         this.bind('KeyDown', function (e) {
 			
-			
-			var that = this;			 		
+            var that = this;			 		
+            
 			if (e.key == Crafty.keys.HOME && !this.isActive) {
 				this.respawn();
 				this.socket.emit("respawn",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
-			};			
+            };		
+            	
 			if(!this.isActive){
 				return false;
-			}
+            }
+            
             if (e.key == Crafty.keys.E) {
                 if (!this.engineStarted) {
                     this.startEngine();
@@ -306,6 +306,7 @@ Crafty.c("MyPlayer", {
                 this.socket.emit("move-backward", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.movePlayer("backward");
             } else if (e.key == Crafty.keys.SPACE) {                
+                this.socket.emit("start-shoot", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.startShoot();
             } else if (e.key == Crafty.keys.X) {
                 this.shoot3();
@@ -313,7 +314,9 @@ Crafty.c("MyPlayer", {
         });
 
         this.bind('KeyUp', function (e) {
-			var that = this;
+            
+            var that = this;
+            
 			if(!this.isActive){
 				return false;
 			}
@@ -331,6 +334,7 @@ Crafty.c("MyPlayer", {
                 this.socket.emit("stop-movement", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.movePlayer("stopMovement");
             } else if (e.key == Crafty.keys.SPACE) {
+                this.socket.emit("stop-shoot", {x:that.x,y:that.y,rotation:that.rotation,id:that._playerId,playerId:this._playerId});
                 this.stopShoot();
             }
         });
@@ -455,7 +459,27 @@ Crafty.c("OtherPlayer", {
                     that.rotation = playerInfo.rotation;
 					that.shoot();
 				}
-			});					
+            });			
+            
+            socket.on("player-start-shoot",function(playerInfo){
+				console.log(that._playerId,that.name,"PLAYER-START-SHOOT", playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+                    that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
+					that.startShoot();
+				}
+            });			
+            
+            socket.on("player-stop-shoot",function(playerInfo){
+				console.log(that._playerId,that.name,"PLAYER-STOP-SHOOT", playerInfo);
+				 if (playerInfo.playerId == that._playerId) {
+                    that.x = playerInfo.x;
+                    that.y = playerInfo.y;
+                    that.rotation = playerInfo.rotation;
+					that.stopShoot();
+				}
+			});			
 		}
     },
 
