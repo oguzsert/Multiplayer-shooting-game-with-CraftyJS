@@ -1,5 +1,23 @@
 Crafty.c("Player", {
 
+    engine: {
+        started: false,
+        move: 'none',
+        movespeed: 10,
+        rotate: 'none'
+    },
+
+    weapon: {
+
+        bullet: "BasicBullet",
+        bulletspeed: 10,
+        bulletcolor: "orange",
+
+        firerate: 10,
+
+        overheated: false,
+    },
+
     init: function () {
         this.addComponent("2D, Canvas, Color, Twoway, Collision");
 
@@ -13,20 +31,13 @@ Crafty.c("Player", {
         this.z = 10;
         this.rotation = 0;
 
-        this.speed = 10;
-
-        this.engineStarted = false;
-        this.movingForward = false;
-        this.movingBackward = false;
-        this.rotatingRight = false;
-        this.rotatingLeft = false;
-
         this.isShooting = false;
 
         Crafty.audio.add(this.audioFiles.ENGINE_IDLE(), "asset/sound/engine/090913-009.mp3");
         Crafty.audio.add(this.audioFiles.ENGINE(), "asset/sound/engine/090913-002.mp3");
         Crafty.audio.add(this.audioFiles.SHOOT(), "asset/sound/shoot/shoot003.mp3");
         Crafty.audio.add(this.audioFiles.SHOOT3(), "asset/sound/shoot/shoot002.mp3");
+        Crafty.audio.add(this.audioFiles.EXPLODE(), "asset/sound/explode.mp3");
 
         this.insideBoard = function (newX, newY) {
             return newX >= 0 && newX <= Crafty.viewport.width && newY >= 0 && newY <= Crafty.viewport.height
@@ -40,46 +51,59 @@ Crafty.c("Player", {
                 }
             }
 
-            if (this.rotatingRight) {
+            if (this.engine.rotate == 'right') {
                 this.rotation += 3;
             }
 
-            if (this.rotatingLeft) {
+            if (this.engine.rotate == 'left') {
                 this.rotation -= 3;
             }
 
-            if (this.movingForward) {
-                newX = this.x + this.speed * Math.cos(this.rotation * Math.PI / 180);
-                newY = this.y + this.speed * Math.sin(this.rotation * Math.PI / 180);
+            if (this.engine.move == 'forward') {
+                newX = this.x + this.engine.movespeed * Math.cos(this.rotation * Math.PI / 180);
+                newY = this.y + this.engine.movespeed * Math.sin(this.rotation * Math.PI / 180);
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
-            else if (this.movingBackward) {
-                newX = this.x - this.speed * Math.cos(this.rotation * Math.PI / 180);
-                newY = this.y - this.speed * Math.sin(this.rotation * Math.PI / 180);
+            else if (this.engine.move == 'backward') {
+                newX = this.x - this.engine.movespeed * Math.cos(this.rotation * Math.PI / 180);
+                newY = this.y - this.engine.movespeed * Math.sin(this.rotation * Math.PI / 180);
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
-            }
-
-            if (this.movingForward || this.movingBackward) {
-                if (this.insideBoard(newX, newY)) {
-                    this.place(newX, newY);
-                }
             }
         });
     },
 
+    reset: function () {
+        this.isActive = true;
+
+        this.x = Crafty.viewport.width / 2 - this.w / 2;
+        this.y = 36;
+        this.rotation = 90;
+
+        this.stopEngine();
+
+        return this;
+    },
+
     die: function () {
+        Crafty.e("DieExplosion").attr({
+            x: this.x - 60,
+            y: this.y - 40
+        });
+
         this.isActive = false;
         this.z = -1;
         this.x = 1000000;
         this.y = 1000000;
+
+        this.stopEngine()
+
+        return this;
     },
 
     respawn: function () {
-        this.isActive = true;
-        this.z = 10;
-        this.place(0, 0);
-        this.rotation = 0;
-        this.stopEngine();
+        this.reset();
+
+        return this;
     },
 
     place: function (x, y, r) {
@@ -113,67 +137,68 @@ Crafty.c("Player", {
         return this;
     },
 
-    movePlayer: function (direction) {
+    startEngine: function () {
+        this.engine.started = true;
+        this.engine.move = 'none';
+        this.engine.rotate = 'none';
 
-        if (!this.engineStarted) {
-            return;
-        }
+        Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
+        Crafty.audio.play(this.audioFiles.ENGINE_IDLE(), -1, 0.5);
+
+        return this;
+    },
+
+    stopEngine: function () {
+        this.engine.started = false;
+        this.engine.move = 'none';
+        this.engine.rotate = 'none';
 
         Crafty.audio.stop(this.audioFiles.ENGINE());
         Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
 
+        return this;
+    },
+
+    toggleEngine: function () {
+        if (!this.engine.started) this.startEngine(); else this.stopEngine();
+    },
+
+    movePlayer: function (direction) {
+
+        if (!this.engine.started) {
+            return;
+        }
+
         console.log(direction);
+
+        Crafty.audio.stop(this.audioFiles.ENGINE());
+        Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
+
         if (direction == "stopMovement") {
-            this.movingForward = false;
-            this.movingBackward = false;
+            this.engine.move = 'none';
             Crafty.audio.play(this.audioFiles.ENGINE_IDLE(), -1);
         } else if (direction == "forward") {
-            this.movingForward = true;
-            this.movingBackward = false;
+            this.engine.move = 'forward';
             Crafty.audio.play(this.audioFiles.ENGINE(), -1);
         } else if (direction == "backward") {
-            this.movingForward = false;
-            this.movingBackward = true;
+            this.engine.move = 'backward';
             Crafty.audio.play(this.audioFiles.ENGINE(), -1);
         }
     },
 
     rotatePlayer: function (direction) {
 
+        console.log(direction);
+
         if (direction == "stopRotate") {
-            this.rotatingRight = false;
-            this.rotatingLeft = false;
-        } else if (direction == "right") {
-            this.rotatingRight = true;
-            this.rotatingLeft = false;
-        } else if (direction == "left") {
-            this.rotatingRight = false;
-            this.rotatingLeft = true;
+            this.engine.rotate = 'none';
         }
-    },
-
-    shoot: function () {
-        Crafty.audio.stop(this.audioFiles.SHOOT());
-        Crafty.audio.play(this.audioFiles.SHOOT());
-
-        var _x = this.x;
-        var _y = this.y;
-        var _rotation = this.rotation;
-
-        var speed = 3;
-
-        var incrementX = speed * Math.cos(_rotation * Math.PI / 180);
-        var incrementY = speed * Math.sin(_rotation * Math.PI / 180)
-
-        _x += incrementX;
-        _y += incrementY + 4;
-
-        var bullet = Crafty.e("2D, Canvas, Color, Tween, Bullet").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: _rotation, ownerId: this._playerId }).color("orange");
-
-        window.setInterval(function () {
-            bullet.x += incrementX;
-            bullet.y += incrementY;
-        }, 1);
+        else if (direction == "right") {
+            this.engine.rotate = 'right';
+        }
+        else if (direction == "left") {
+            this.engine.rotate = 'left';
+        }
     },
 
     startShoot: function (shooter) {
@@ -184,61 +209,56 @@ Crafty.c("Player", {
         this.isShooting = false;
     },
 
+    shoot: function () {
+        Crafty.audio.stop(this.audioFiles.SHOOT());
+        Crafty.audio.play(this.audioFiles.SHOOT());
+
+        var bullet = Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor);
+
+        bullet.attr({
+            ownerId: this._playerId,
+            x: this.x,
+            y: this.y + 4,
+            rotation: this.rotation,
+            xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
+            yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
+        });
+
+    },
+
     shoot3: function () {
         Crafty.audio.stop(this.audioFiles.SHOOT3());
         Crafty.audio.play(this.audioFiles.SHOOT3());
 
-        var _x = this.x;
-        var _y = this.y;
-        var _rotation = this.rotation;
+        Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor)
+            .attr({
+                ownerId: this._playerId,
+                x: this.x,
+                y: this.y,
+                rotation: this.rotation,
+                xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
+                yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
+            });
 
-        var speed = 1;
+        Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor)
+            .attr({
+                ownerId: this._playerId,
+                x: this.x + 10,
+                y: this.y,
+                rotation: this.rotation + 45,
+                xspeed: this.weapon.bulletspeed * Math.cos((this.rotation + 45) * Math.PI / 180),
+                yspeed: this.weapon.bulletspeed * Math.sin((this.rotation + 45) * Math.PI / 180)
+            });
 
-        _x += (16 * Math.cos(_rotation * Math.PI / 180));
-        _y += (16 * Math.sin(_rotation * Math.PI / 180)) + 4;
-
-        var bullet1 = Crafty.e("2D, Canvas, Color").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation }).color("orange");
-        var bullet2 = Crafty.e("2D, Canvas, Color").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation + 45 }).color("orange");
-        var bullet3 = Crafty.e("2D, Canvas, Color").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: this.rotation - 45 }).color("orange");
-
-        window.setInterval(function () {
-
-            bullet1.x += speed * Math.cos(bullet1.rotation * Math.PI / 180);
-            bullet1.y += speed * Math.sin(bullet1.rotation * Math.PI / 180);
-
-            bullet2.x += speed * Math.cos(bullet2.rotation * Math.PI / 180);
-            bullet2.y += speed * Math.sin(bullet2.rotation * Math.PI / 180);
-
-            bullet3.x += speed * Math.cos(bullet3.rotation * Math.PI / 180);
-            bullet3.y += speed * Math.sin(bullet3.rotation * Math.PI / 180);
-        }, 5);
-    },
-
-    startEngine: function () {
-        this.engineStarted = true;
-        Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
-        Crafty.audio.play(this.audioFiles.ENGINE_IDLE(), -1, 0.5);
-
-        return this;
-    },
-
-    stopEngine: function () {
-        this.engineStarted = false;
-        this.movingForward = false;
-        this.movingBackward = false;
-
-        Crafty.audio.stop(this.audioFiles.ENGINE());
-        Crafty.audio.stop(this.audioFiles.ENGINE_IDLE());
-        
-        return this;
-    },
-
-    toggleEngine: function () {
-        if (!this.engineStarted) {
-            this.startEngine();
-        } else {
-            this.stopEngine();
-        }
+        Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor)
+            .attr({
+                ownerId: this._playerId,
+                x: this.x + 50,
+                y: this.y,
+                rotation: this.rotation - 45,
+                xspeed: this.weapon.bulletspeed * Math.cos((this.rotation - 45) * Math.PI / 180),
+                yspeed: this.weapon.bulletspeed * Math.sin((this.rotation - 45) * Math.PI / 180)
+            });
     },
 
     audioFiles: {
@@ -246,6 +266,7 @@ Crafty.c("Player", {
         ENGINE_IDLE: function () { return "engine-idle_" + this._sessionId; },
         SHOOT: function () { return "shoot_" + this._sessionId; },
         SHOOT3: function () { return "shoot3_" + this._sessionId; },
+        EXPLODE: function () { return "explode"; },
     },
 });
 
@@ -283,13 +304,15 @@ Crafty.c("MyPlayer", {
             }
 
             if (e.key == Crafty.keys.E) {
-                if (!this.engineStarted) {
-                    this.startEngine();
+                if (!this.engine.started) {
                     this.socket.emit("engine-on", { x: that.x, y: that.y, rotation: that.rotation, id: that._playerId, playerId: this._playerId });
+                    this.startEngine();
                 } else {
-                    this.stopEngine();
                     this.socket.emit("engine-off", { x: that.x, y: that.y, rotation: that.rotation, id: that._playerId, playerId: this._playerId });
+                    this.stopEngine();
                 }
+            } else if (e.key == Crafty.keys.ESC) {
+                this.die();
             } else if (e.key == Crafty.keys.LEFT_ARROW) {
                 this.socket.emit("rotate-left", { x: that.x, y: that.y, rotation: that.rotation, id: that._playerId, playerId: this._playerId });
                 this.rotatePlayer("left");
@@ -349,6 +372,20 @@ Crafty.c("OtherPlayer", {
         this.onSocketBinded = function (socket) {
             var that = this;
 
+            socket.on("player-respawn", function (playerInfo) {
+                console.log(that._playerId, that.name, "PLAYER-RESPAWN", playerInfo);
+                if (playerInfo.playerId == that._playerId) {
+                    that.respawn();
+                }
+            });
+
+            socket.on("player-die", function (playerInfo) {
+                console.log(that._playerId, that.name, "DIED", playerInfo);
+                if (playerInfo.playerId == that._playerId) {
+                    that.die();
+                }
+            });
+
             socket.on("player-engine-on", function (playerInfo) {
                 console.log(that._playerId, that.name, "ENGINE-ON", playerInfo);
                 if (playerInfo.playerId == that._playerId) {
@@ -377,20 +414,6 @@ Crafty.c("OtherPlayer", {
                 if (playerInfo.playerId == that._playerId) {
                     that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
                     that.movePlayer("backward");
-                }
-            });
-
-            socket.on("player-die", function (playerInfo) {
-                console.log(that._playerId, that.name, "DIED", playerInfo);
-                if (playerInfo.playerId == that._playerId) {
-                    that.die();
-                }
-            });
-
-            socket.on("player-respawn", function (playerInfo) {
-                console.log(that._playerId, that.name, "PLAYER-RESPAWN", playerInfo);
-                if (playerInfo.playerId == that._playerId) {
-                    that.respawn();
                 }
             });
 
@@ -426,14 +449,6 @@ Crafty.c("OtherPlayer", {
                 }
             });
 
-            socket.on("player-shoot", function (playerInfo) {
-                console.log(that._playerId, that.name, "PLAYER-SHOOT", playerInfo);
-                if (playerInfo.playerId == that._playerId) {
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.shoot();
-                }
-            });
-
             socket.on("player-start-shoot", function (playerInfo) {
                 console.log(that._playerId, that.name, "PLAYER-START-SHOOT", playerInfo);
                 if (playerInfo.playerId == that._playerId) {
@@ -447,6 +462,14 @@ Crafty.c("OtherPlayer", {
                 if (playerInfo.playerId == that._playerId) {
                     that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
                     that.stopShoot();
+                }
+            });
+
+            socket.on("player-shoot", function (playerInfo) {
+                console.log(that._playerId, that.name, "PLAYER-SHOOT", playerInfo);
+                if (playerInfo.playerId == that._playerId) {
+                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
+                    that.shoot();
                 }
             });
         }

@@ -1,6 +1,16 @@
 <html>
 
-<head></head>
+<head>
+	<script>
+		var game_path = location.href.lastIndexOf("/") !== -1 ? location.href.substring(0, location.href.lastIndexOf("/") + 1) : location.href;
+	</script>
+	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
+	<script type="text/javascript" src="./sprites.js"></script>
+	<script type="text/javascript" src="./efects.js"></script>
+	<script type="text/javascript" src="./players.js"></script>
+	<script type="text/javascript" src="./weapons.js"></script>
+	<script type="text/javascript" src="./socket.io.js"></script>
+</head>
 
 <body style="font-family:tahoma;">
 	<style>
@@ -15,20 +25,16 @@
 			margin-top: 5px;
 		}
 	</style>
+
 	<input type="text" placeholder="nick" id="nick" value="Keke">
 	<input type="text" placeholder="renk" id="renk" value="red">
-	<div>
-		<div style="float:left" onclick="createControllablePlayer()" id="createbutton">Oyuncu Oluştur</div>
-		<div style="float:left;margin-left:10px" id="msg">engine on/off: press E</div>
-	</div>
-	<div style="clear:both"></div>
+
+	<div onclick="createControllablePlayer()" id="createbutton">Oyuncu Oluştur</div>
 
 	<div id="game" style="border:1px dotted #000;"></div>
 
-	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
-	<script type="text/javascript" src="./components.js"></script>
-	<script type="text/javascript" src="./socket.io.js"></script>
 	<script>
+	
 		var socket = io('http://192.168.6.80:3000');
 
 		var players = {};
@@ -44,15 +50,8 @@
 
 			var player = createMyPlayer(playerNick, playerColor);
 
-			socket.emit("createPlayerOnServer", {
-				nick: playerNick,
-				color: playerColor,
-				id: player._playerId,
-				x: player.x,
-				y: player.y
-			});
+			player.startEngine();
 
-			
 		}
 
 		socket.on("newPlayerJoined", function (newPlayerInfo) {
@@ -67,10 +66,19 @@
 				.showName()
 				.color(color)
 				.addWeapon('rifle')
-				.place(0, 0)
-				.bindSocket(socket);
+				.bindSocket(socket)
+				.reset();
 
 			players[player._playerId] = player;
+
+			socket.emit("createPlayerOnServer", {
+				nick: nick,
+				color: color,
+				id: player._playerId,
+				x: player.x,
+				y: player.y
+			});
+
 
 			return player;
 		}
@@ -83,14 +91,15 @@
 				.showName()
 				.color(color)
 				.addWeapon('rifle')
-				.place(0, 0)
-				.bindSocket(socket);
+				.bindSocket(socket)
+				.reset();
 
 			players[player._playerId] = player;
 
 			return player;
 		}
 	</script>
+
 </body>
 
 </html>
