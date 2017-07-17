@@ -1,11 +1,12 @@
 Crafty.c("Player", {
 
     init: function () {
-        this.addComponent("2D, Canvas, Color, Twoway");
-
+        this.addComponent("2D, Canvas, Color, Twoway, Collision");
+				 
         this._playerId = new Date().getTime();
-
         this._sessionId = new Date().getTime();
+		
+		this.isActive = true;
 
         this.w = 16;
         this.h = 16;
@@ -23,6 +24,20 @@ Crafty.c("Player", {
         
         console.log(Crafty.audio);
     },
+	
+	die:function(){		
+		this.isActive = false;
+		this.z = -1;
+		this.x = 1000000;
+		this.y = 1000000;
+	},
+	respawn:function(){		
+		this.isActive = true;
+		this.z = 10;
+	    this.place(0,0);
+		this.rotation = 0;
+		this.stopEngine();
+	},
     
     place: function (x, y) {
         this.x = x;
@@ -52,12 +67,15 @@ Crafty.c("Player", {
     },
 
     movePlayer: function (direction) {
+	
 
         window.clearInterval(this._movementInterval);
+	
+        if (!this.engineStarted){ 
+			return;
+		}
 
-        if (!this.engineStarted) return;
-
-        console.log(direction);
+      
 
         if (direction == "stopMovement") {
             this.movingForward = false;
@@ -73,6 +91,7 @@ Crafty.c("Player", {
         var that = this;
 
         this._movementInterval = window.setInterval(function () {
+		
             if (direction == "forward") {
                 if (!that.movingForward) {
                     Crafty.audio.stop(that.audioFiles.ENGINE_IDLE());
@@ -116,10 +135,10 @@ Crafty.c("Player", {
 
         this._rotateInterval = window.setInterval(function () {
             if (direction == "right") {
-                that.rotation += 0.5;
+                that.rotation += 0.3;
             }
             else if (direction == "left") {
-                that.rotation -= 0.5;
+                that.rotation -= 0.3;
             }
         }, 1);
     },
@@ -140,7 +159,7 @@ Crafty.c("Player", {
         _x += incrementX;
         _y += incrementY + 4;
 
-        var bullet = Crafty.e("2D, Canvas, Color, Tween").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: _rotation }).color("orange");
+        var bullet = Crafty.e("2D, Canvas, Color, Tween, Bullet").attr({ x: _x, y: _y, w: 5, h: 5, z: 1, rotation: _rotation,ownerId:this._playerId }).color("orange");
         
         window.setInterval(function () {
             bullet.x += incrementX;
@@ -225,7 +244,11 @@ Crafty.c("Player", {
 Crafty.c("MyPlayer", {
 
     init: function () {
+		
+		
         this.addComponent("Player");
+		
+	
 
         this.socket = null;
         
@@ -235,9 +258,26 @@ Crafty.c("MyPlayer", {
             setInterval(function(){
 				socket.emit("correction",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId});
 			}, 1000);
+			
+			this.checkHits('Bullet').bind("HitOn", function(hitData) {
+				var bulletOwnerId = hitData[0].obj.ownerId;
+				if(this._playerId != bulletOwnerId){
+					this.socket.emit("die",this._playerId);
+					this.die();			
+				}
+			});
+		
+			
         }
         
         this.bind('KeyDown', function (e) {
+			if (e.key == Crafty.keys.HOME && !this.isActive) {
+				this.respawn();
+				this.socket.emit("respawn",this._playerId);
+			};			
+			if(!this.isActive){
+				return false;
+			}
             if (e.key == Crafty.keys.E) {
                 if (!this.engineStarted) {
                     this.startEngine();
@@ -266,7 +306,11 @@ Crafty.c("MyPlayer", {
             }
         });
 
-        this.bind('KeyUp', function (e) {		
+        this.bind('KeyUp', function (e) {
+			
+			if(!this.isActive){
+				return false;
+			}
             if (e.key == Crafty.keys.LEFT_ARROW) {
 				this.socket.emit("stop-rotate",this._playerId);
                 this.rotatePlayer("stopRotate");
@@ -326,9 +370,8 @@ Crafty.c("OtherPlayer", {
 				}
 			});
 			
-			socket.on("player-move-forward",function(id){
-				console.log(that._playerId,that.name,"MOVING-FORWARD",id);
-				if(id == that._playerId){
+			socket.on("player-move-forward",function(id){				
+				if(id == that._playerId){				
 					that.movePlayer("forward");
 				}
 			});
@@ -337,6 +380,20 @@ Crafty.c("OtherPlayer", {
 				console.log(that._playerId,that.name,"MOVING-BACKWARD",id);
 				if(id == that._playerId){
 					that.movePlayer("backward");
+				}
+			});
+			
+			socket.on("player-die",function(id){
+				console.log(that._playerId,that.name,"DIED",id);
+				if(id == that._playerId){
+					that.die();
+				}
+			});
+			
+			socket.on("player-respawn",function(id){
+				console.log(that._playerId,that.name,"PLAYER-RESPAWN",id);
+				if(id == that._playerId){
+					that.respawn();
 				}
 			});
 			
@@ -374,6 +431,8 @@ Crafty.c("OtherPlayer", {
 					that.shoot();
 				}
 			});
+			
+		
 		}
     },
 

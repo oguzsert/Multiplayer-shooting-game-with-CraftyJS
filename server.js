@@ -49,6 +49,15 @@ io.on('connection', function(client){
 	client.on("correction",function(correctionData){
 		client.broadcast.emit("player-correction",correctionData);		
 	});
+	
+	client.on("die",function(playerId){		
+		client.broadcast.emit("player-die",playerId);
+	});
+	
+	client.on("respawn",function(playerId){		
+		client.broadcast.emit("player-respawn",playerId);
+	});
+  
   
   
 });
