@@ -1,13 +1,8 @@
 Crafty.c("Player", {
 
     init: function () {
-<<<<<<< HEAD
-        this.addComponent("2D, Canvas, Color, Solid");
-
-=======
         this.addComponent("2D, Canvas, Color, Twoway, Collision");
 				 
->>>>>>> 82704361381e5d6175a68e1e31c2e58fff7d26ce
         this._playerId = new Date().getTime();
         this._sessionId = new Date().getTime();
 		
@@ -29,9 +24,6 @@ Crafty.c("Player", {
 
         console.log(Crafty.audio);
     },
-<<<<<<< HEAD
-
-=======
 	
 	die:function(){		
 		this.isActive = false;
@@ -47,7 +39,6 @@ Crafty.c("Player", {
 		this.stopEngine();
 	},
     
->>>>>>> 82704361381e5d6175a68e1e31c2e58fff7d26ce
     place: function (x, y) {
         this.x = x;
         this.y = y;
@@ -393,51 +384,6 @@ Crafty.c("OtherPlayer", {
                     that.movePlayer("forward");
                 }
             });
-<<<<<<< HEAD
-
-            socket.on("player-move-backward", function (id) {
-                console.log(that._playerId, that.name, "MOVING-BACKWARD", id);
-                if (id == that._playerId) {
-                    that.movePlayer("backward");
-                }
-            });
-
-            socket.on("player-stop-movement", function (id) {
-                console.log(that._playerId, that.name, "STOP-MOVEMENT", id);
-                if (id == that._playerId) {
-                    that.movePlayer("stopMovement");
-                }
-            });
-
-            socket.on("player-rotate-right", function (id) {
-                console.log(that._playerId, that.name, "ROTATE-RIGHT", id);
-                if (id == that._playerId) {
-                    that.rotatePlayer("right");
-                }
-            });
-
-            socket.on("player-rotate-left", function (id) {
-                console.log(that._playerId, that.name, "ROTATE-LEFT", id);
-                if (id == that._playerId) {
-                    that.rotatePlayer("left");
-                }
-            });
-
-            socket.on("player-rotate-stop", function (id) {
-                console.log(that._playerId, that.name, "ROTATE-STOP", id);
-                if (id == that._playerId) {
-                    that.rotatePlayer("stopRotate");
-                }
-            });
-
-            socket.on("player-shoot", function (id) {
-                console.log(that._playerId, that.name, "PLAYER-SHOOT", id);
-                if (id == that._playerId) {
-                    that.shoot();
-                }
-            });
-        }
-=======
             
 			socket.on("player-engine-on",function(id){
 				console.log(that._playerId,that.name,"ENGINE-ON",id);
@@ -513,11 +459,8 @@ Crafty.c("OtherPlayer", {
 				if(id == that._playerId){
 					that.shoot();
 				}
-			});
-			
-		
+			});					
 		}
->>>>>>> 82704361381e5d6175a68e1e31c2e58fff7d26ce
     },
 
     setId: function (id) {
