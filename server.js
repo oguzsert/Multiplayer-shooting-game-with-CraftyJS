@@ -57,6 +57,15 @@ io.on('connection', function(client){
 	client.on("respawn",function(playerInfo){		
 		client.broadcast.emit("player-respawn",playerInfo);
 	});
+	
+	
+	client.on("start-shoot",function(playerInfo){		
+		client.broadcast.emit("player-start-shoot",playerInfo);
+	});
+	
+	client.on("stop-shoot",function(playerInfo){		
+		client.broadcast.emit("player-stop-shoot",playerInfo);
+	});
   
   
   
