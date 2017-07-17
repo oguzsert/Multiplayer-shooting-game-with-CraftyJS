@@ -34,8 +34,7 @@
 	<div id="game" style="border:1px dotted #000;"></div>
 
 	<script>
-	
-		var socket = io('http://192.168.6.80:3000');
+		var socket = io('http://127.0.0.1:3000');
 
 		var players = {};
 
@@ -49,14 +48,11 @@
 			var playerNick = document.getElementById("nick").value;
 
 			var player = createMyPlayer(playerNick, playerColor);
-
-			player.startEngine();
-
 		}
 
 		socket.on("newPlayerJoined", function (newPlayerInfo) {
 			console.log("new-player-joined");
-			createOtherPlayer(newPlayerInfo.id, newPlayerInfo.nick, newPlayerInfo.color);
+			createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color);
 		});
 
 		function createMyPlayer(nick, color) {
@@ -64,7 +60,7 @@
 			var player = Crafty.e("MyPlayer")
 				.setName(nick)
 				.showName()
-				.color(color)
+				.color(color, 0.5)
 				.addWeapon('rifle')
 				.bindSocket(socket)
 				.reset();
@@ -72,11 +68,9 @@
 			players[player._playerId] = player;
 
 			socket.emit("createPlayerOnServer", {
+				playerid: player._playerId,
 				nick: nick,
 				color: color,
-				id: player._playerId,
-				x: player.x,
-				y: player.y
 			});
 
 

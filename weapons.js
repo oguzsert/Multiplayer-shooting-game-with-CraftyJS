@@ -4,7 +4,7 @@ Crafty.c("Bullet", {
     yspeed: 10,
     init: function () {
         this.addComponent("2D", "Canvas", "Color", "Collision")
-            .bind("EnterFrame", function () {
+            .bind("EnterFrame", function (frame) {
                 if (this.x > Crafty.viewport.width + this.w ||
                     this.x < -this.w ||
                     this.y < -this.h ||
@@ -13,7 +13,7 @@ Crafty.c("Bullet", {
                 }
             })
             .onHit("Bullet", function (ent) {
-                if(this.ownerId != ent[0].obj.ownerId){
+                if (this.ownerId != ent[0].obj.ownerId) {
                     this.destroy();
                     ent[0].obj.destroy();
                     console.log("bullets destroyed");
@@ -26,7 +26,10 @@ Crafty.c("BasicBullet", {
     init: function () {
         this
             .addComponent("Bullet")
-            .bind("EnterFrame", function () {
+            .bind("EnterFrame", function (frame) {
+                 if (frame.frame % 50 == 0) {
+                    console.log("BasicBullet_EnterFrame", frame, this.xspeed, this.yspeed);
+                }
                 this.x += this.xspeed;
                 this.y += this.yspeed;
             })
