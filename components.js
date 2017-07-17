@@ -17,12 +17,21 @@ Crafty.c("Player", {
         this.movingForward = false;
         this.movingBackward = false;
 
+        this.isShooting = false;
+
         Crafty.audio.add(this.audioFiles.ENGINE_IDLE(), "asset/sound/engine/090913-009.mp3");
         Crafty.audio.add(this.audioFiles.ENGINE(), "asset/sound/engine/090913-002.mp3");
         Crafty.audio.add(this.audioFiles.SHOOT(), "asset/sound/shoot/shoot003.mp3");
         Crafty.audio.add(this.audioFiles.SHOOT3(), "asset/sound/shoot/shoot002.mp3");
 
-        console.log(Crafty.audio);
+        this.bind("EnterFrame", function(frame){
+            if(frame.frame % 5 == 0){
+                if(this.isShooting){
+                    this.socket.emit("shoot", this._playerId);
+                    this.shoot();
+                }
+            }
+        });
     },
 	
 	die:function(){		
@@ -30,7 +39,8 @@ Crafty.c("Player", {
 		this.z = -1;
 		this.x = 1000000;
 		this.y = 1000000;
-	},
+    },
+    
 	respawn:function(){		
 		this.isActive = true;
 		this.z = 10;
@@ -68,14 +78,11 @@ Crafty.c("Player", {
 
     movePlayer: function (direction) {
 	
-
         window.clearInterval(this._movementInterval);
 	
         if (!this.engineStarted){ 
 			return;
 		}
-
-      
 
         if (direction == "stopMovement") {
             this.movingForward = false;
@@ -176,15 +183,11 @@ Crafty.c("Player", {
     },
 
     startShoot: function (shooter) {
-        shooter.apply(this);
-        var that = this;
-        this.autoShootInterval = window.setInterval(function () {
-            shooter.apply(that);
-        }, 200);
+        this.isShooting = true;
     },
 
     stopShoot: function () {
-        window.clearInterval(this.autoShootInterval);
+        this.isShooting = false;
     },
 
     shoot3: function () {
@@ -253,10 +256,7 @@ Crafty.c("MyPlayer", {
 
     init: function () {
 		
-		
         this.addComponent("Player");
-		
-	
 
         this.socket = null;
 
@@ -305,9 +305,8 @@ Crafty.c("MyPlayer", {
             } else if (e.key == Crafty.keys.DOWN_ARROW) {
                 this.socket.emit("move-backward", this._playerId);
                 this.movePlayer("backward");
-            } else if (e.key == Crafty.keys.SPACE) {
-                this.socket.emit("shoot", this._playerId);
-                this.shoot();
+            } else if (e.key == Crafty.keys.SPACE) {                
+                this.startShoot();
             } else if (e.key == Crafty.keys.X) {
                 this.shoot3();
             }
@@ -385,33 +384,6 @@ Crafty.c("OtherPlayer", {
                 }
             });
             
-			socket.on("player-engine-on",function(id){
-				console.log(that._playerId,that.name,"ENGINE-ON",id);
-				if(id == that._playerId){
-					that.startEngine();
-				}
-			});
-		
-			socket.on("player-engine-off",function(id){
-				console.log(that._playerId,that.name,"ENGINE-OFF",id);
-				if(id == that._playerId){
-					that.stopEngine();
-				}
-			});
-			
-			socket.on("player-move-forward",function(id){				
-				if(id == that._playerId){				
-					that.movePlayer("forward");
-				}
-			});
-			
-			socket.on("player-move-backward",function(id){
-				console.log(that._playerId,that.name,"MOVING-BACKWARD",id);
-				if(id == that._playerId){
-					that.movePlayer("backward");
-				}
-			});
-			
 			socket.on("player-die",function(id){
 				console.log(that._playerId,that.name,"DIED",id);
 				if(id == that._playerId){
