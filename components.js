@@ -135,10 +135,10 @@ Crafty.c("Player", {
 
         this._rotateInterval = window.setInterval(function () {
             if (direction == "right") {
-                that.rotation += 0.3;
+                that.rotation += 0.5;
             }
             else if (direction == "left") {
-                that.rotation -= 0.3;
+                that.rotation -= 0.5;
             }
         }, 1);
     },
@@ -257,7 +257,7 @@ Crafty.c("MyPlayer", {
 
             setInterval(function(){
 				socket.emit("correction",{x:that.x,y:that.y,rotation:that.rotation,id:that._playerId});
-			}, 1000);
+			}, 2000);
 			
 			this.checkHits('Bullet').bind("HitOn", function(hitData) {
 				var bulletOwnerId = hitData[0].obj.ownerId;
