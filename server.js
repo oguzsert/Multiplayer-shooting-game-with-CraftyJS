@@ -10,52 +10,52 @@ io.on('connection', function(client){
 		client.broadcast.emit("newPlayerJoined",player);
 	});
 	
-	client.on("engine-on",function(playerId){		
-		client.broadcast.emit("player-engine-on",playerId);
+	client.on("engine-on",function(playerInfo){		
+		client.broadcast.emit("player-engine-on",playerInfo);
 	});
 	
-	client.on("engine-off",function(playerId){		
-		client.broadcast.emit("player-engine-off",playerId);
+	client.on("engine-off",function(playerInfo){		
+		client.broadcast.emit("player-engine-off",playerInfo);
 	});
 	
-	client.on("move-forward",function(playerId){		
-		client.broadcast.emit("player-move-forward",playerId);
+	client.on("move-forward",function(playerInfo){		
+		client.broadcast.emit("player-move-forward",playerInfo);
 	});
 	
-	client.on("move-backward",function(playerId){		
-		client.broadcast.emit("player-move-backward",playerId);
+	client.on("move-backward",function(playerInfo){		
+		client.broadcast.emit("player-move-backward",playerInfo);
 	});
 	
-	client.on("stop-movement",function(playerId){		
-		client.broadcast.emit("player-stop-movement",playerId);
+	client.on("stop-movement",function(playerInfo){		
+		client.broadcast.emit("player-stop-movement",playerInfo);
 	});
 	
-	client.on("rotate-right",function(playerId){		
-		client.broadcast.emit("player-rotate-right",playerId);
+	client.on("rotate-right",function(playerInfo){		
+		client.broadcast.emit("player-rotate-right",playerInfo);
 	});
 	
-	client.on("rotate-left",function(playerId){		
-		client.broadcast.emit("player-rotate-left",playerId);
+	client.on("rotate-left",function(playerInfo){		
+		client.broadcast.emit("player-rotate-left",playerInfo);
 	});
 	
-	client.on("stop-rotate",function(playerId){		
-		client.broadcast.emit("player-rotate-stop",playerId);
+	client.on("stop-rotate",function(playerInfo){		
+		client.broadcast.emit("player-rotate-stop",playerInfo);
 	});
 	
-	client.on("shoot",function(playerId){
-		client.broadcast.emit("player-shoot",playerId);		
+	client.on("shoot",function(playerInfo){
+		client.broadcast.emit("player-shoot",playerInfo);		
 	});
 	
 	client.on("correction",function(correctionData){
 		client.broadcast.emit("player-correction",correctionData);		
 	});
 	
-	client.on("die",function(playerId){		
-		client.broadcast.emit("player-die",playerId);
+	client.on("die",function(playerInfo){		
+		client.broadcast.emit("player-die",playerInfo);
 	});
 	
-	client.on("respawn",function(playerId){		
-		client.broadcast.emit("player-respawn",playerId);
+	client.on("respawn",function(playerInfo){		
+		client.broadcast.emit("player-respawn",playerInfo);
 	});
   
   
