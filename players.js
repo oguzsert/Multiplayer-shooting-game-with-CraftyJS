@@ -92,6 +92,7 @@ Crafty.c("Player", {
         this.stopEngine();
 		this.movePlayer("stopMovement");
 		this.rotatePlayer("stopRotate");
+		this.stopShoot();
 
         return this;
     },
