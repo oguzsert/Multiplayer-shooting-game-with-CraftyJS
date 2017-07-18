@@ -27,14 +27,11 @@ Crafty.c("BasicBullet", {
         this
             .addComponent("Bullet")
             .bind("EnterFrame", function (frame) {
-                 if (frame.frame % 50 == 0) {
-                    console.log("BasicBullet_EnterFrame", frame, this.xspeed, this.yspeed);
-                }
                 this.x += this.xspeed;
                 this.y += this.yspeed;
             })
             .attr({
-                dmg: 1,
+                dmg: 2,
                 w: 5,
                 h: 5
             });

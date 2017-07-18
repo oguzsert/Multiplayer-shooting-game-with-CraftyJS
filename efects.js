@@ -1,3 +1,13 @@
+Crafty.c("Damage",{
+    init:function(){
+        this.addComponent("2D","Canvas","dmg");
+        var that = this;
+        setTimeout(function(){that.destroy()},100);
+        // .delay(function(){this.destroy()},100);
+        
+    }
+});
+
 Crafty.c("DieExplosion", {
     init: function () {
         var e = this.addComponent("2D", "Canvas", "SpriteAnimation", "explosion1")
