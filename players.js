@@ -89,7 +89,9 @@ Crafty.c("Player", {
         this.x = 1000000;
         this.y = 1000000;
 
-        this.stopEngine()
+        this.stopEngine();
+		this.movePlayer("stopMovement");
+		this.rotatePlayer("stopRotate");
 
         return this;
     },
