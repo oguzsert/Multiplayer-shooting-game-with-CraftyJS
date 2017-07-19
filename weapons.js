@@ -37,3 +37,19 @@ Crafty.c("BasicBullet", {
             });
     }
 });
+
+Crafty.c("BigBullet", {
+    init: function () {
+        this
+            .addComponent("Bullet")
+            .bind("EnterFrame", function (frame) {
+                this.x += this.xspeed;
+                this.y += this.yspeed;
+            })
+            .attr({
+                dmg: 3,
+                w: 10,
+                h: 10
+            });
+    }
+});

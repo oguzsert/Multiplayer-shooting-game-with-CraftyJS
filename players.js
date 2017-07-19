@@ -238,7 +238,7 @@ Crafty.c("Player", {
         Crafty.audio.stop(this.audioFiles.SHOOT3(this));
         Crafty.audio.play(this.audioFiles.SHOOT3(this));
 
-        Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor)
+        Crafty.e("BigBullet").color(this.color())
             .attr({
                 ownerId: this._playerId,
                 x: this.x,
@@ -248,7 +248,7 @@ Crafty.c("Player", {
                 yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
             });
 
-        Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor)
+        Crafty.e("BigBullet").color(this.color())
             .attr({
                 ownerId: this._playerId,
                 x: this.x + 10,
@@ -258,7 +258,7 @@ Crafty.c("Player", {
                 yspeed: this.weapon.bulletspeed * Math.sin((this.rotation + 45) * Math.PI / 180)
             });
 
-        Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor)
+        Crafty.e("BigBullet").color(this.color())
             .attr({
                 ownerId: this._playerId,
                 x: this.x + 50,
