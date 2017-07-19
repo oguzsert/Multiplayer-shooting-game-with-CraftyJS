@@ -1,10 +1,15 @@
-Crafty.c("Damage",{
-    init:function(){
-        this.addComponent("2D","Canvas","dmg");
+Crafty.c("Damage", {
+    init: function () {
+        this.addComponent("2D", "Canvas", "dmg");
+
+        Crafty.audio.play("damage", 1, 1);
+
         var that = this;
-        setTimeout(function(){that.destroy()},100);
-        // .delay(function(){this.destroy()},100);
-        
+
+        setTimeout(function () {
+            that.destroy();
+            Crafty.audio.stop("damage");
+        }, 200);
     }
 });
 
@@ -18,6 +23,28 @@ Crafty.c("DieExplosion", {
                 console.log("AnimationEnd");
             });
 
-        Crafty.audio.play("explode", 1, 0.5);
+        Crafty.audio.play("explode", 1, 1);
     }
+});
+
+Crafty.c("Flicker", {
+    flicker: true,
+    init: function () {
+        this.flicker = true;
+        this.bind("EnterFrame", function (frame) {
+            if (this.flicker) {
+                if (frame.frame % 5 == 0) {
+                    if (this.alpha == 0.0) {
+                        this.alpha = 1.0;
+                    } else {
+                        this.alpha = 0.0;
+                    }
+                }
+            }
+            else {
+                this.alpha = 1.0;
+            }
+        });
+    }
+
 });

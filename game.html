@@ -34,7 +34,10 @@
 	<div id="game" style="border:1px dotted #000;"></div>
 
 	<script>
-		var socket = io('http://192.168.6.80:3000');
+
+		 var socket = io('http://127.0.0.1:3000');
+		// var socket = io('http://192.168.6.80:3000');
+
 
 		var players = {};
 
@@ -60,7 +63,7 @@
 			var player = Crafty.e("MyPlayer")
 				.setName(nick)
 				.showName()
-				.color(color, 0.5)
+				.color(color)
 				.addWeapon('rifle')
 				.bindSocket(socket)
 				.reset();
@@ -72,7 +75,6 @@
 				nick: nick,
 				color: color,
 			});
-
 
 			return player;
 		}
