@@ -6,6 +6,7 @@ Crafty.c("Player", {
     init: function () {
         this.addComponent("2D, Canvas, Color, Collision");
 
+        this.playerType = "none";
         this._playerId = new Date().getTime();
         this._sessionId = new Date().getTime();
 
@@ -67,21 +68,27 @@ Crafty.c("Player", {
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
         })
-        .bind("Hurt", function (dmg) {
-            Crafty.e("Damage").attr({
-                x: this.x,
-                y: this.y
+            .bind("Hurt", function (dmg) {
+                Crafty.e("Damage").attr({
+                    x: this.x,
+                    y: this.y
+                });
+
+                this.hp.current -= dmg;
+
+                if (this.playerType == "mine") {
+                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: dmg });
+                }
+
+                console.log("player:" + this.name, this.playerType, "hp:" + this.hp.current);
+
+                if (this.hp.current <= 0) {
+                    if (this.playerType == "mine") {
+                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                        this.die();
+                    }
+                }
             });
-
-            this.hp.current -= dmg;
-
-            console.log("player:" + this.name, "hp:" + this.hp.current);
-            
-            if (this.hp.current <= 0) {
-                this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.die();
-            }
-        });
     },
 
     reset: function () {
@@ -296,79 +303,81 @@ Crafty.c("MyPlayer", {
 
     init: function () {
 
-        this.socket = null;
-
-        this.onSocketBinded = function (socket) { }
-
         this.addComponent("Player")
-        .onHit("Bullet", function (hitData) {
+            .onHit("Bullet", function (hitData) {
                 var bulletOwnerId = hitData[0].obj.ownerId;
                 if (this._playerId != bulletOwnerId) {
                     this.trigger("Hurt", hitData[0].obj.dmg);
                 }
-        })
-        .bind('KeyDown', function (e) {
+            })
+            .bind('KeyDown', function (e) {
 
-            if (e.key == Crafty.keys.HOME && !this.isActive) {
-                this.respawn();
-                this.socket.emit("respawn", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-            };
+                if (e.key == Crafty.keys.HOME && !this.isActive) {
+                    this.respawn();
+                    this.socket.emit("respawn", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                };
 
-            if (!this.isActive) {
-                return false;
-            }
-
-            if (e.key == Crafty.keys.E) {
-                if (!this.engine.started) {
-                    this.socket.emit("engine-on", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                    this.startEngine();
-                } else {
-                    this.socket.emit("engine-off", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                    this.stopEngine();
+                if (!this.isActive) {
+                    return false;
                 }
-            } else if (e.key == Crafty.keys.ESC) {
-                this.die();
-            } else if (e.key == Crafty.keys.LEFT_ARROW) {
-                this.socket.emit("rotate-left", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.rotatePlayer("left");
-            } else if (e.key == Crafty.keys.RIGHT_ARROW) {
-                this.rotatePlayer("right");
-                this.socket.emit("rotate-right", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-            } else if (e.key == Crafty.keys.UP_ARROW) {
-                this.socket.emit("move-forward", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.movePlayer("forward");
-            } else if (e.key == Crafty.keys.DOWN_ARROW) {
-                this.socket.emit("move-backward", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.movePlayer("backward");
-            } else if (e.key == Crafty.keys.SPACE) {
-                this.socket.emit("start-shoot", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.startShoot();
-            } else if (e.key == Crafty.keys.X) {
-                this.shoot3();
-            }
-        })
-        .bind('KeyUp', function (e) {
 
-            if (!this.isActive) {
-                return false;
-            }
+                if (e.key == Crafty.keys.E) {
+                    if (!this.engine.started) {
+                        this.socket.emit("engine-on", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                        this.startEngine();
+                    } else {
+                        this.socket.emit("engine-off", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                        this.stopEngine();
+                    }
+                } else if (e.key == Crafty.keys.ESC) {
+                    this.die();
+                } else if (e.key == Crafty.keys.LEFT_ARROW) {
+                    this.socket.emit("rotate-left", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                    this.rotatePlayer("left");
+                } else if (e.key == Crafty.keys.RIGHT_ARROW) {
+                    this.rotatePlayer("right");
+                    this.socket.emit("rotate-right", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                } else if (e.key == Crafty.keys.UP_ARROW) {
+                    this.socket.emit("move-forward", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                    this.movePlayer("forward");
+                } else if (e.key == Crafty.keys.DOWN_ARROW) {
+                    this.socket.emit("move-backward", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                    this.movePlayer("backward");
+                } else if (e.key == Crafty.keys.SPACE) {
+                    this.socket.emit("start-shoot", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                    this.startShoot();
+                } else if (e.key == Crafty.keys.X) {
+                    this.shoot3();
+                }
+            })
+            .bind('KeyUp', function (e) {
 
-            if (e.key == Crafty.keys.LEFT_ARROW || e.key == Crafty.keys.RIGHT_ARROW) {
-                this.socket.emit("stop-rotate", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.rotatePlayer("stopRotate");
-            } else if (e.key == Crafty.keys.UP_ARROW || e.key == Crafty.keys.DOWN_ARROW) {
-                this.socket.emit("stop-movement", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.movePlayer("stopMovement");
-            } else if (e.key == Crafty.keys.SPACE) {
-                this.socket.emit("stop-shoot", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
-                this.stopShoot();
-            }
-        });
+                if (!this.isActive) {
+                    return false;
+                }
+
+                if (e.key == Crafty.keys.LEFT_ARROW || e.key == Crafty.keys.RIGHT_ARROW) {
+                    this.socket.emit("stop-rotate", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                    this.rotatePlayer("stopRotate");
+                } else if (e.key == Crafty.keys.UP_ARROW || e.key == Crafty.keys.DOWN_ARROW) {
+                    this.socket.emit("stop-movement", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                    this.movePlayer("stopMovement");
+                } else if (e.key == Crafty.keys.SPACE) {
+                    this.socket.emit("stop-shoot", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                    this.stopShoot();
+                }
+            });
+
+        this.playerType = "mine";
+
+        this.socket = null;
+
+        this.onSocketBinded = function (socket) { }
     },
 
     bindSocket: function (socketObject) {
         this.socket = socketObject;
-        if(this.onSocketBinded) this.onSocketBinded(this.socket);
+        if (this.onSocketBinded) this.onSocketBinded(this.socket);
         return this;
     }
 
@@ -377,7 +386,10 @@ Crafty.c("MyPlayer", {
 Crafty.c("OtherPlayer", {
 
     init: function () {
+
         this.addComponent("Player");
+
+        this.playerType = "other";
 
         this.socket = null;
 
@@ -388,6 +400,13 @@ Crafty.c("OtherPlayer", {
                 if (playerInfo.playerId == that._playerId) {
                     console.log(that._playerId, that.name, "PLAYER-RESPAWN", playerInfo);
                     that.respawn();
+                }
+            });
+
+            socket.on("player-hurt", function (playerInfo) {
+                if (playerInfo.playerId == that._playerId) {
+                    console.log(that._playerId, that.name, "HURT", playerInfo);
+                    that.trigger("Hurt", playerInfo.dmg);
                 }
             });
 

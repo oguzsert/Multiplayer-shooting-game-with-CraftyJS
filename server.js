@@ -5,75 +5,87 @@ var io = require('socket.io')(server);
 
 io.on('connection', function (client) {
 
-	client.on("createPlayerOnServer", function (player) {
-		console.log("createPlayerOnServer", player);
-		client.broadcast.emit("newPlayerJoined", player);
+	client.on("createPlayerOnServer", function (data) {
+		console.log("createPlayerOnServer", data);
+		client.broadcast.emit("newPlayerJoined", data);
 	});
 
-	client.on("engine-on", function (player) {
-		console.log("engine-on", player);
-		client.broadcast.emit("player-engine-on", player);
+	client.on("engine-on", function (data) {
+		console.log("engine-on", data);
+		client.broadcast.emit("player-engine-on", data);
 	});
 
-	client.on("engine-off", function (player) {
-		console.log("engine-off", player);
-		client.broadcast.emit("player-engine-off", player);
+	client.on("engine-off", function (data) {
+		console.log("engine-off", data);
+		client.broadcast.emit("player-engine-off", data);
 	});
 
-	client.on("move-forward", function (player) {
-		console.log("move-forward", player);
-		client.broadcast.emit("player-move-forward", player);
+	client.on("move-forward", function (data) {
+		console.log("move-forward", data);
+		client.broadcast.emit("player-move-forward", data);
 	});
 
-	client.on("move-backward", function (player) {
-		console.log("move-backward", player);
-		client.broadcast.emit("player-move-backward", player);
+	client.on("move-backward", function (data) {
+		console.log("move-backward", data);
+		client.broadcast.emit("player-move-backward", data);
 	});
 
-	client.on("stop-movement", function (player) {
-		console.log("stop-movement", player);
-		client.broadcast.emit("player-stop-movement", player);
+	client.on("stop-movement", function (data) {
+		console.log("stop-movement", data);
+		client.broadcast.emit("player-stop-movement", data);
 	});
 
-	client.on("rotate-right", function (playerInfo) {
-		client.broadcast.emit("player-rotate-right", playerInfo);
+	client.on("rotate-right", function (data) {
+		console.log("rotate-right", data);
+		client.broadcast.emit("player-rotate-right", data);
 	});
 
-	client.on("rotate-left", function (playerInfo) {
-		client.broadcast.emit("player-rotate-left", playerInfo);
+	client.on("rotate-left", function (data) {
+		console.log("rotate-left", data);
+		client.broadcast.emit("player-rotate-left", data);
 	});
 
-	client.on("stop-rotate", function (playerInfo) {
-		client.broadcast.emit("player-rotate-stop", playerInfo);
+	client.on("stop-rotate", function (data) {
+		console.log("stop-rotate", data);
+		client.broadcast.emit("player-rotate-stop", data);
 	});
 
-	client.on("shoot", function (playerInfo) {
-		client.broadcast.emit("player-shoot", playerInfo);
+	client.on("shoot", function (data) {
+		console.log("shoot", data);
+		client.broadcast.emit("player-shoot", data);
 	});
 
-	client.on("correction", function (correctionData) {
-		client.broadcast.emit("player-correction", correctionData);
+	client.on("correction", function (data) {
+		console.log("correction", data);
+		client.broadcast.emit("player-correction", data);
 	});
 
-	client.on("die", function (playerInfo) {
-		client.broadcast.emit("player-die", playerInfo);
+	client.on("hurt", function (data) {
+		console.log("hurt", data);
+		client.broadcast.emit("player-hurt", data);
 	});
 
-	client.on("respawn", function (playerInfo) {
-		client.broadcast.emit("player-respawn", playerInfo);
+	client.on("die", function (data) {
+		console.log("die", data);
+		client.broadcast.emit("player-die", data);
 	});
 
-
-	client.on("start-shoot", function (playerInfo) {
-		client.broadcast.emit("player-start-shoot", playerInfo);
+	client.on("respawn", function (data) {
+		console.log("respawn", data);
+		client.broadcast.emit("player-respawn", data);
 	});
 
-	client.on("stop-shoot", function (playerInfo) {
-		client.broadcast.emit("player-stop-shoot", playerInfo);
+	client.on("start-shoot", function (data) {
+		console.log("start-shoot", data);
+		client.broadcast.emit("player-start-shoot", data);
 	});
 
-
+	client.on("stop-shoot", function (data) {
+		console.log("stop-shoot", data);
+		client.broadcast.emit("player-stop-shoot", data);
+	});
 
 });
+
 server.listen(3000);
 
