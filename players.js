@@ -305,9 +305,11 @@ Crafty.c("MyPlayer", {
 
         this.addComponent("Player")
             .onHit("Bullet", function (hitData) {
+                console.log(hitData);
                 var bulletOwnerId = hitData[0].obj.ownerId;
                 if (this._playerId != bulletOwnerId) {
                     this.trigger("Hurt", hitData[0].obj.dmg);
+                    hitData[0].obj.destroy();
                 }
             })
             .bind('KeyDown', function (e) {
