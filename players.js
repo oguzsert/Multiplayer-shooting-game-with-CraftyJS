@@ -43,18 +43,18 @@ Crafty.c("Player", {
 
         this.bind("EnterFrame", function (frame) {
 
-            if (frame.frame % 10 == 0) {
+            if (frame.frame % 5 == 0) {
                 if (this.isShooting) {
                     this.shoot();
                 }
             }
 
             if (this.engine.rotate == 'right') {
-                this.rotation += 2;
+                this.rotation += 5;
             }
 
             if (this.engine.rotate == 'left') {
-                this.rotation -= 2;
+                this.rotation -= 5;
             }
 
             if (this.engine.move == 'forward') {
@@ -105,8 +105,8 @@ Crafty.c("Player", {
 
         var that = this;
 
-        setTimeout(function(){
-            console.log("flicker off",  that.flicker);
+        setTimeout(function () {
+            console.log("flicker off", that.flicker);
             that.flicker = false;
         }, 3000);
 
@@ -128,8 +128,11 @@ Crafty.c("Player", {
         this.rotatePlayer("stopRotate");
         this.stopShoot();
 
-        this.respawn();
-        this.socket.emit("respawn", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+        var that = this;
+        setTimeout(function () {
+            that.respawn();
+            that.socket.emit("respawn", { x: that.x, y: that.y, rotation: that.rotation, playerId: that._playerId });
+        }, 1000);
 
         return this;
     },
@@ -172,7 +175,7 @@ Crafty.c("Player", {
     },
 
     movePlayer: function (direction) {
-       
+
         console.log(direction);
 
         Crafty.audio.stop(this.audioFiles.ENGINE(this));
@@ -280,7 +283,7 @@ Crafty.c("MyPlayer", {
 
         this.addComponent("Player")
             .onHit("Bullet", function (hitData) {
-                if(this.flicker) return;
+                if (this.flicker) return;
                 var bulletOwnerId = hitData[0].obj.ownerId;
                 if (this._playerId != bulletOwnerId) {
                     this.trigger("Hurt", hitData[0].obj.dmg);
