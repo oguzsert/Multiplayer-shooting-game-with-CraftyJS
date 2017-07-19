@@ -60,9 +60,10 @@
 		function createMyPlayer(nick, color) {
 
 			var player = Crafty.e("MyPlayer")
+			.color(color)
 				.setName(nick)
 				.showName()
-				.color(color)
+				
 				.addWeapon('rifle')
 				.bindSocket(socket)
 				.reset();
@@ -82,9 +83,9 @@
 
 			var player = Crafty.e("OtherPlayer")
 				.setId(id)
+				.color(color)
 				.setName(nick)
 				.showName()
-				.color(color)
 				.addWeapon('rifle')
 				.bindSocket(socket)
 				.reset();

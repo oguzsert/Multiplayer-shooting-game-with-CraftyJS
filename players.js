@@ -157,7 +157,7 @@ Crafty.c("Player", {
         this.origin('center');
 
         if (type == 'rifle') {
-            var rifle = Crafty.e("2D, Canvas, Color").attr({ x: 16, y: 5, w: 8, h: 5, z: 10 }).color('red');
+            var rifle = Crafty.e("2D, Canvas, Color").attr({ x: 16, y: 5, w: 8, h: 5, z: 10 }).color(this.color());
             this.attach(rifle);
         }
 
@@ -170,7 +170,9 @@ Crafty.c("Player", {
     },
 
     showName: function (name) {
-        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor('black').textFont({ size: '11px', weight: 'bold' }));
+
+        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor(this.color()).textFont({ size: '11px', weight: 'bold' }));
+
         return this;
     },
 
@@ -220,7 +222,7 @@ Crafty.c("Player", {
         Crafty.audio.stop(this.audioFiles.SHOOT(this));
         Crafty.audio.play(this.audioFiles.SHOOT(this));
 
-        var bullet = Crafty.e(this.weapon.bullet).color(this.weapon.bulletcolor);
+        var bullet = Crafty.e(this.weapon.bullet).color(this.color());
 
         bullet.attr({
             ownerId: this._playerId,
