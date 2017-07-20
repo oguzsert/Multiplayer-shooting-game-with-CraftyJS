@@ -1,13 +1,24 @@
 var server = require('http').createServer();
 var io = require('socket.io')(server);
+var extend = require('util')._extend;
 
-
+var players = [];
 
 io.on('connection', function (client) {
 
 	client.on("createPlayerOnServer", function (data) {
 		console.log("createPlayerOnServer", data);
+		players.push(data);
 		client.broadcast.emit("newPlayerJoined", data);
+	});
+	
+	client.on("getPlayers",function(){
+		client.emit("currentPlayerList",players);
+		
+	});
+	
+	client.on("ineedcorrections",function(){
+		client.broadcast.emit("sendCorrections");		
 	});
 
 	client.on("engine-on", function (data) {
@@ -83,6 +94,11 @@ io.on('connection', function (client) {
 	client.on("stop-shoot", function (data) {
 		console.log("stop-shoot", data);
 		client.broadcast.emit("player-stop-shoot", data);
+	});
+	
+	client.on("correction",function(data){
+		console.log("correction",data);
+		client.broadcast.emit("player-correction",data);		
 	});
 
 });

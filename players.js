@@ -370,7 +370,19 @@ Crafty.c("OtherPlayer", {
 
         this.onSocketBinded = function (socket) {
             var that = this;
-
+			
+			 socket.on("player-correction", function (data) {
+                if (data.playerId == that._playerId) {						 
+						that.x = data.x;
+						that.y = data.y;
+						that.rotation = data.rotation;
+						that.engine.move = data.movement;
+						that.engine.rotate = data.engine.rotate;
+						that.engine.isShooting = data.shoot;
+                }
+				
+            });
+			
             socket.on("player-respawn", function (playerInfo) {
                 if (playerInfo.playerId == that._playerId) {
                     console.log(that._playerId, that.name, "PLAYER-RESPAWN", playerInfo);
