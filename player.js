@@ -60,12 +60,31 @@ Crafty.c("Player", {
 
             if (this.engine.move == 'forward') {
                 newX = this.x + this.engine.movespeed * Math.cos(this.rotation * Math.PI / 180);
+
+                // if (newX > Crafty.viewport.width) {
+                //     newX = 0;
+                // }
+
                 newY = this.y + this.engine.movespeed * Math.sin(this.rotation * Math.PI / 180);
+
+                // if (newY > Crafty.viewport.height) {
+                //     newY = 0;
+                // }
+
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
             else if (this.engine.move == 'backward') {
                 newX = this.x - this.engine.movespeed * Math.cos(this.rotation * Math.PI / 180);
                 newY = this.y - this.engine.movespeed * Math.sin(this.rotation * Math.PI / 180);
+
+                // if (newX > Crafty.viewport.width) {
+                //     newX = 0;
+                // }
+
+                // if (newY > Crafty.viewport.height) {
+                //     newY = 0;
+                // }
+
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
         })
@@ -105,7 +124,7 @@ Crafty.c("Player", {
         this.rotation = 0;
 
         this.hp = { current: 10, max: 10 };
-        
+
         this.updateHealthBar(100);
 
         var that = this;
@@ -185,18 +204,26 @@ Crafty.c("Player", {
 
         console.log(direction);
 
-        Crafty.audio.stop(this.audioFiles.ENGINE(this));
-        Crafty.audio.stop(this.audioFiles.ENGINE_IDLE(this));
+        if (this.playerType == 'mine') {
+            Crafty.audio.stop(this.audioFiles.ENGINE(this));
+            Crafty.audio.stop(this.audioFiles.ENGINE_IDLE(this));
+        }
 
         if (direction == "stopMovement") {
             this.engine.move = 'none';
-            Crafty.audio.play(this.audioFiles.ENGINE_IDLE(this), -1, 0.2);
+            if (this.playerType == 'mine') {
+                Crafty.audio.play(this.audioFiles.ENGINE_IDLE(this), -1, 0.2);
+            }
         } else if (direction == "forward") {
             this.engine.move = 'forward';
-            Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 0.2);
+            if (this.playerType == 'mine') {
+                Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 0.2);
+            }
         } else if (direction == "backward") {
             this.engine.move = 'backward';
-            Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 0.2);
+            if (this.playerType == 'mine') {
+                Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 0.2);
+            }
         }
     },
 
@@ -224,8 +251,6 @@ Crafty.c("Player", {
     },
 
     shoot: function () {
-        Crafty.audio.stop(this.audioFiles.SHOOT(this));
-        Crafty.audio.play(this.audioFiles.SHOOT(this));
 
         var bullet = Crafty.e(this.weapon.bullet).color(this.color());
 
@@ -237,11 +262,14 @@ Crafty.c("Player", {
             xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
             yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
         });
+
+        if (this.playerType == 'mine') {
+            Crafty.audio.stop(this.audioFiles.SHOOT(this));
+            Crafty.audio.play(this.audioFiles.SHOOT(this));
+        }
     },
 
     shoot3: function () {
-        Crafty.audio.stop(this.audioFiles.SHOOT3(this));
-        Crafty.audio.play(this.audioFiles.SHOOT3(this));
 
         Crafty.e("BigBullet").color(this.color())
             .attr({
@@ -272,6 +300,11 @@ Crafty.c("Player", {
                 xspeed: this.weapon.bulletspeed * Math.cos((this.rotation - 45) * Math.PI / 180),
                 yspeed: this.weapon.bulletspeed * Math.sin((this.rotation - 45) * Math.PI / 180)
             });
+
+        if (this.playerType == 'mine') {
+            Crafty.audio.stop(this.audioFiles.SHOOT3(this));
+            Crafty.audio.play(this.audioFiles.SHOOT3(this));
+        }
     },
 
     audioFiles: {
@@ -363,157 +396,6 @@ Crafty.c("MyPlayer", {
 
 });
 
-Crafty.c("OtherPlayer", {
-
-    init: function () {
-
-        this.addComponent("Player");
-
-        this.playerType = "other";
-
-        this.socket = null;
-
-        this.onSocketBinded = function (socket) {
-            var that = this;
-
-            socket.on("player-correction", function (data) {
-                if (data.playerId == that._playerId) {
-                    that.x = data.x;
-                    that.y = data.y;
-                    that.rotation = data.rotation;
-                    that.engine.move = data.movement;
-                    that.engine.rotate = data.engine.rotate;
-                    that.engine.isShooting = data.shoot;
-                }
-
-            });
-
-            socket.on("player-respawn", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "PLAYER-RESPAWN", playerInfo);
-                    that.respawn();
-                }
-            });
-
-            socket.on("player-hurt", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "HURT", playerInfo);
-                    that.trigger("Hurt", playerInfo.dmg);
-                }
-            });
-
-            socket.on("player-die", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "DIED", playerInfo);
-                    that.die();
-                }
-            });
-
-            socket.on("player-engine-on", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "ENGINE-ON", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.startEngine();
-                }
-            });
-
-            socket.on("player-engine-off", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "ENGINE-OFF", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.stopEngine();
-                }
-            });
-
-            socket.on("player-move-forward", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "MOVING-FORWARD", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.movePlayer("forward");
-                }
-            });
-
-            socket.on("player-move-backward", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "MOVING-BACKWARD", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.movePlayer("backward");
-                }
-            });
-
-            socket.on("player-stop-movement", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "STOP-MOVEMENT", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.movePlayer("stopMovement");
-                }
-            });
-
-            socket.on("player-rotate-right", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "ROTATE-RIGHT", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.rotatePlayer("right");
-                }
-            });
-
-            socket.on("player-rotate-left", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "ROTATE-LEFT", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.rotatePlayer("left");
-                }
-            });
-
-            socket.on("player-rotate-stop", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "ROTATE-STOP", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.rotatePlayer("stopRotate");
-                }
-            });
-
-            socket.on("player-start-shoot", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "PLAYER-START-SHOOT", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.startShoot();
-                }
-            });
-
-            socket.on("player-stop-shoot", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "PLAYER-STOP-SHOOT", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.stopShoot();
-                }
-            });
-
-            socket.on("player-shoot", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    console.log(that._playerId, that.name, "PLAYER-SHOOT", playerInfo);
-                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
-                    that.shoot();
-                }
-            });
-        }
-    },
-
-    setId: function (id) {
-        if (id !== undefined) {
-            this._playerId = id;
-        }
-        return this;
-    },
-
-    bindSocket: function (socketObject) {
-        this.socket = socketObject;
-        this.onSocketBinded(this.socket);
-        return this;
-    }
-
-});
-
 Crafty.c("HealthBar", {
     init: function () {
         this.requires("2D");
@@ -525,23 +407,23 @@ Crafty.c("HealthBar", {
     },
 
     initHealthBar: function (totalWidth, filledColor) {
-        
+
         this._pbTotalWidth = totalWidth;
 
         this._pbBlockWidth = this._pbTotalWidth * this._pbFilledFraction;
 
-        this._pbLowerBlock = Crafty.e("2D, Canvas, Color").color(filledColor).attr({
+        this._pbLowerBlock = Crafty.e("2D, Canvas, Color").color('green').attr({
             x: this._x,
             y: this._y + this._pbY,
-            w: this._pbBlockWidth, 
+            w: this._pbBlockWidth,
             h: this._pbHeight,
             z: 100
         });
 
-        this._pbHigherBlock = Crafty.e("2D, Canvas, Color").color(filledColor == 'gray'?'black':'gray').attr({
+        this._pbHigherBlock = Crafty.e("2D, Canvas, Color").color(filledColor == 'gray' ? 'black' : 'gray').attr({
             x: this._x,
             y: this._y + this._pbY,
-            w: this._pbBlockWidth, 
+            w: this._pbBlockWidth,
             h: this._pbHeight,
             z: 1
         });;
@@ -559,8 +441,16 @@ Crafty.c("HealthBar", {
         this._pbBlockWidth = this._pbTotalWidth * this._pbFilledFraction;
 
         this._pbLowerBlock.attr({
-            w: this._pbBlockWidth, 
+            w: this._pbBlockWidth,
         });
+
+        if (this._pbFilledFraction >= 0.8 && this._pbFilledFraction <= 1)
+            this._pbLowerBlock.color('green')
+        else if (this._pbFilledFraction <= 0.2) {
+            this._pbLowerBlock.color('red')
+        } else {
+            this._pbLowerBlock.color('orange')
+        }
 
         return this;
     }
