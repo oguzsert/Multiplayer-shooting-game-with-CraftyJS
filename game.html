@@ -129,6 +129,10 @@
 				});
 				socket.emit("ineedcorrections");
 			});
+			
+			socket.on("scoreboard-update",function(scoreboardData){
+				console.warn(scoreboardData);
+			})
 
 			socket.emit("getPlayers");
 			

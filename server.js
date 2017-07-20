@@ -3,9 +3,40 @@ var io = require('socket.io')(server);
 var extend = require('util')._extend;
 
 var clients = [];
+var score = {};
 
 io.on('connection', function (socket) {
 	console.log('new connection:', socket.id);
+	
+	function createPlayerScore(playerId){
+		
+	}
+	
+	function updatePlayerScore(playerId,parameter,value){		
+		var targetPlayer = {};
+				
+		clients.forEach(function(client){
+			if(playerId == client.player.playerid){
+				targetPlayer = client
+			}		
+		});
+		
+		if(!score[targetPlayer.player.playerid]){
+			score[playerId]  = {
+				name:targetPlayer.player.name,
+				kill:0,
+				dead:0
+				points:0
+			}
+		}
+		
+		score[playerId][parameter] = score[playerId][parameter] + value;
+		
+		
+						
+	}
+
+	
 	
 	socket.on("createPlayerOnServer", function (data) {
 		console.log("createPlayerOnServer", data);
@@ -55,11 +86,18 @@ io.on('connection', function (socket) {
 
 	socket.on("hurt", function (data) {
 		console.log("hurt", data);
+		updatePlayerScore(data.hitterId,"point",1);
 		socket.broadcast.emit("player-hurt", data);
+		io.sockets.emit('scoreboard-update', score);
+		
 	});
 
 	socket.on("die", function (data) {
 		console.log("die", data);
+		updatePlayerScore(data.hitterId,"point",10);
+		updatePlayerScore(data.hitterId,"kill",1);
+		updatePlayerScore(data._playerId,"dead",1);
+		io.sockets.emit('scoreboard-update', score);
 		socket.broadcast.emit("player-die", data);
 	});
 
