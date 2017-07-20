@@ -171,10 +171,6 @@ Crafty.c("Player", {
     addWeapon: function (type) {
         this.origin('center');
 
-        if (type == 'rifle') {
-            var rifle = Crafty.e("2D, Canvas, Color").attr({ x: this.w, y: this.h / 3, w: this.w / 2, h: this.h / 3, z: 10 }).color(this.color());
-            this.attach(rifle);
-        }
 
         return this;
     },
@@ -315,7 +311,7 @@ Crafty.c("HealthBar", {
         this._pbMaxValue = 100;
         this._pbFilledFraction = 1;
         this._pbHeight = 3;
-        this._pbY = 34;
+        this._pbY = 38;
     },
 
     initHealthBar: function (totalWidth, filledColor) {
