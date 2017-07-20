@@ -26,7 +26,7 @@
 			<option value="http://192.168.6.217:3000">baris</option>
 			<option value="http://127.0.0.1:3000">uzaklar</option>
 		</select>
-		<input type="button" onclick="joinGame()" id="createbutton" value="Oyuncu Oluştur">
+		<input type="button" onclick="joinGame()" id="createbutton" value="join">
 		<br /><br />
 	</div>
 	<div id="game" style="border:3px dotted #000;display:none"></div>
@@ -76,7 +76,7 @@
 				color: color,
 			});
 
- 			return myplayer;
+			return myplayer;
 		}
 
 		function createOtherPlayer(id, nick, color, isPristine) {
@@ -129,18 +129,17 @@
 				});
 				socket.emit("ineedcorrections");
 			});
-			
-			socket.on("scoreboard-update",function(scoreboardData){
+
+			socket.on("scoreboard-update", function (scoreboardData) {
 				console.warn(scoreboardData);
 			})
 
 			socket.emit("getPlayers");
-			
-			 Crafty.e("2D, Canvas, terrain");	
+
+			Crafty.e("2D, Canvas, terrain").attr({ z: -1000 });
 
 			return socket;
 		}
-
 	</script>
 
 </body>
