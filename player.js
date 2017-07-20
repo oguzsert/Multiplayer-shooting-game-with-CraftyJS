@@ -199,7 +199,7 @@ Crafty.c("Player", {
 
     showName: function (name) {
 
-        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + this.h + 2 }).text(this.name).textColor("black").textFont({ size: '10px', weight: 'bold' }));
+        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + this.h + 2 }).text(this.name).textColor("white").textFont({ size: '11px', weight: 'bold' }));
 
         return this;
     },
