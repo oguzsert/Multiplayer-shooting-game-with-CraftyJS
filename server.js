@@ -28,7 +28,7 @@ io.on('connection', function (socket) {
 		clients.push(newClient);
 
 		io.sockets.emit('scoreboard-update', clients);
-		
+
 		socket.broadcast.emit("newPlayerJoined", data);
 	});
 
@@ -116,7 +116,9 @@ io.on('connection', function (socket) {
 	socket.on("disconnect", function () {
 		console.log("client disconnected", socket.id);
 
-		var c = removeClient(clients, socket.id);
+		var c = removeClient(socket.id);
+
+		io.sockets.emit('scoreboard-update', clients);
 	});
 
 	function updatePlayerScore(playerId, parameter, value) {
@@ -171,13 +173,21 @@ io.on('connection', function (socket) {
 		return -1;
 	}
 
-	function removeClient(clients, clientId) {
+	function removeClient(clientId) {
 		var clientIndex = getClientIndex(clientId);
 
 		if (clientIndex >= 0) {
+			
+			var player = getPlayerBySocketId(clientId);
+
+			if (player) {
+				console.log("player-left", player);
+				io.sockets.emit('playerLeft', player);
+			}
+
 			console.log("client removed")
 			clients.splice(clientIndex, 1);
-			io.sockets.emit('scoreboard-update', clients);
+
 			return clients[clientIndex]
 		}
 

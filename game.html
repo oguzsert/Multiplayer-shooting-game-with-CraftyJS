@@ -129,6 +129,23 @@
 				createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color, true);
 			});
 
+			socket.on("playerLeft", function (playerInfo) {
+				console.log("playerLeft", playerInfo);
+
+				var players = Crafty('OtherPlayer').get();
+
+				for (var index = 0; index < players.length; index++) {
+					var player = players[index];
+					console.log(player);
+					if (player._playerId == playerInfo.playerid) {
+						console.log("player destoyed");
+						player.destroy();
+					}
+
+				}
+				console.log('otherplayers', Crafty('OtherPlayer'))
+			});
+
 			socket.on("currentPlayerList", function (playerList) {
 				playerList.forEach(function (player) {
 					createOtherPlayer(player.playerid, player.nick, player.color, false);
@@ -148,7 +165,7 @@
 		}
 
 		function renderScoreBoard(clients) {
-			
+
 			console.log("scores", clients);
 
 			var html = '<table><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
