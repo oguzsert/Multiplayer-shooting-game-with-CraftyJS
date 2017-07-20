@@ -41,6 +41,10 @@ Crafty.sprite(32,24,game_path + "asset/img/yellowtank.png",{
     yellowtank:[0,0]
 });
 
+Crafty.sprite(1024,768,game_path+"asset/img/mapterrain.png",{
+	terrain:[0,0]	
+});
+
 
 
 
