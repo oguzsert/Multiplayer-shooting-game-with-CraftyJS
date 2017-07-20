@@ -5,24 +5,35 @@ Crafty.c("Player", {
     },
 
     init: function () {
-        this.addComponent("2D, Canvas, Color, Collision, Flicker, HealthBar");
+        this.addComponent("2D, Canvas, Collision, Flicker, HealthBar");
 
         this.playerType = "none";
         this._playerId = new Date().getTime();
         this._sessionId = new Date().getTime();
-
+		
         this.isActive = true;
-        this.w = 20;
-        this.h = 20;
+        this.w = 32;
+        this.h = 24;
         this.z = 10;
         this.rotation = 0;
         this.isShooting = false;
+		this.origin('center');
+		var colour = "";
+		this.color = function(){
+			return colour;
+		}
 
         this.engine = {
             move: 'none',
             movespeed: 10,
             rotate: 'none'
         };
+		
+		this.setColor = function(color){			
+			colour = color;			
+			this.addComponent(color+"tank");						
+			return this;
+		}
 
         this.weapon = {
             bullet: "BasicBullet",
@@ -159,12 +170,7 @@ Crafty.c("Player", {
     },
 
     addWeapon: function (type) {
-        this.origin('center');
-
-        if (type == 'rifle') {
-            var rifle = Crafty.e("2D, Canvas, Color").attr({ x: this.w, y: this.h / 3, w: this.w / 2, h: this.h / 3, z: 10 }).color(this.color());
-            this.attach(rifle);
-        }
+      
 
         return this;
     },
@@ -176,7 +182,7 @@ Crafty.c("Player", {
 
     showName: function (name) {
 
-        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + this.h + 2 }).text(this.name).textColor("black").textFont({ size: '10px', weight: 'bold' }));
+        this.attach(Crafty.e("2D, DOM, Text").attr({ x: 0, y: this.y + this.h }).text(this.name).textColor("black").textFont({ size: '10px', weight: 'bold' }));
 
         return this;
     },
@@ -232,7 +238,7 @@ Crafty.c("Player", {
         bullet.attr({
             ownerId: this._playerId,
             x: this.x,
-            y: this.y,
+            y: this.y+15,
             rotation: this.rotation,
             xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
             yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
