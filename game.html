@@ -21,22 +21,12 @@
 	<div id="game" style="border:1px dotted #000;"></div>
 
 	<script>
-<<<<<<< HEAD
-		var socket = io('http://127.0.0.1:3000');
-		//var socket = io('http://192.168.6.80:3000');
-
-		socket.on("newPlayerJoined", function (newPlayerInfo) {
-			console.log("new-player-joined", newPlayerInfo);
-			createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color);
-		});
-=======
 		//var socket = io('http://127.0.0.1:3000');
 		var socket = io('http://192.168.6.80:3000');
 		
 		
 		
 		
->>>>>>> 0abfe7400c5a9cfba324ad9fd8bbe7f9188804aa
 
 		var myplayer = null;
 
