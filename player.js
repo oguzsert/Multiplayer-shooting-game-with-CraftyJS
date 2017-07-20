@@ -109,14 +109,14 @@ Crafty.c("Player", {
                 this.updateHealthBar(this.hp.current / this.hp.max * 100);
 
                 if (this.playerType == "mine") {
-                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: dmg });
+                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: dmg ,hitterId:hitterId});
                 }
 
                 console.log("player:" + this.name, this.playerType, "hp:" + this.hp.current);
 
                 if (this.hp.current <= 0) {
                     if (this.playerType == "mine") {
-                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
+                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId ,hitterId:hitterId});
                         this.die();
                     }
                 }
