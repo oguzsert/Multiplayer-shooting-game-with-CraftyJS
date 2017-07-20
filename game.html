@@ -13,29 +13,16 @@
 </head>
 
 <body style="font-family:tahoma;">
-	<style>
-		#createbutton {
-			width: 150px;
-			height: 15px;
-			background-color: #efefef;
-			text-align: center;
-			padding: 10px;
-			cursor: pointer;
-			margin-bottom: 5px;
-			margin-top: 5px;
-		}
-	</style>
-
 	<input type="text" placeholder="nick" id="nick" value="Keke">
 	<input type="text" placeholder="renk" id="renk" value="red">
-
-	<div onclick="createControllablePlayer()" id="createbutton">Oyuncu Oluştur</div>
+	<input type="button" onclick="createControllablePlayer()" id="createbutton" value="Oyuncu Oluştur">
+	<br /><br />
 
 	<div id="game" style="border:1px dotted #000;"></div>
 
 	<script>
-		//var socket = io('http://127.0.0.1:3000');
-		var socket = io('http://192.168.6.80:3000');
+		var socket = io('http://127.0.0.1:3000');
+		//var socket = io('http://192.168.6.80:3000');
 
 		socket.on("newPlayerJoined", function (newPlayerInfo) {
 			console.log("new-player-joined", newPlayerInfo);
