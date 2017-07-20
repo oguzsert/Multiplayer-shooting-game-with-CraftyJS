@@ -109,16 +109,12 @@ Crafty.c("Player", {
                 this.updateHealthBar(this.hp.current / this.hp.max * 100);
 
                 if (this.playerType == "mine") {
-					console.info("HITTER-ID",data.ownerId);
-                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.damage ,hitterId:data.ownerId});
+                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.damage, hitterId: data.ownerId });
                 }
-
-                console.log("player:" + this.name, this.playerType, "hp:" + this.hp.current);
 
                 if (this.hp.current <= 0) {
                     if (this.playerType == "mine") {
-						console.info("HITTER-ID",data.ownerId);
-                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId ,hitterId:data.ownerId});
+                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, hitterId: data.ownerId });
                         this.die();
                     }
                 }
@@ -210,25 +206,22 @@ Crafty.c("Player", {
 
         console.log(direction);
 
-        if (this.playerType == 'mine') {
-            Crafty.audio.stop(this.audioFiles.ENGINE(this));
-            Crafty.audio.stop(this.audioFiles.ENGINE_IDLE(this));
-        }
+
 
         if (direction == "stopMovement") {
             this.engine.move = 'none';
             if (this.playerType == 'mine') {
-                // Crafty.audio.play(this.audioFiles.ENGINE_IDLE(this), -1, 0.5);
+                Crafty.audio.stop(this.audioFiles.ENGINE(this));
             }
         } else if (direction == "forward") {
             this.engine.move = 'forward';
             if (this.playerType == 'mine') {
-                Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 0.5);
+                Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 1);
             }
         } else if (direction == "backward") {
             this.engine.move = 'backward';
             if (this.playerType == 'mine') {
-                Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 0.5);
+                Crafty.audio.play(this.audioFiles.ENGINE(this), -1, 1);
             }
         }
     },
@@ -257,7 +250,7 @@ Crafty.c("Player", {
     },
 
     shoot: function () {
-		
+
         var bullet = Crafty.e(this.weapon.bullet);
 
         bullet.attr({
@@ -271,7 +264,7 @@ Crafty.c("Player", {
 
         if (this.playerType == 'mine') {
             Crafty.audio.stop(this.audioFiles.SHOOT(this));
-            Crafty.audio.play(this.audioFiles.SHOOT(this));
+            Crafty.audio.play(this.audioFiles.SHOOT(this), 1, 0.1);
         }
     },
 

@@ -5,38 +5,15 @@ var extend = require('util')._extend;
 var clients = [];
 var score = {};
 
-io.on('connection', function (socket) {
-	console.log('new connection:', socket.id);
-	
-	
-	
-	function updatePlayerScore(playerId,parameter,value){		
-		var targetPlayer = {};
-				
-		clients.forEach(function(client){
-			if(playerId == client.player.playerid){
-				targetPlayer = client
-			}		
-		});
-		
-		console.log(targetPlayer,"COMOLOKKO",clients);
-		
-		if(!score[targetPlayer.playerid]){
-			score[playerId]  = {
-				name:targetPlayer.player.nick,
-				kill:0,
-				dead:0,
-				points:0
-			}
-		}
-		
-		score[playerId][parameter] = score[playerId][parameter] + value;
-		
-		
-						
-	}
+var points = {
+	hurt: 1,
+	kill: 10,
+	dead: 0
+}
 
-	
+io.on('connection', function (socket) {
+
+	console.log('new connection:', socket.id);
 	
 	socket.on("createPlayerOnServer", function (data) {
 		console.log("createPlayerOnServer", data);
@@ -86,19 +63,20 @@ io.on('connection', function (socket) {
 
 	socket.on("hurt", function (data) {
 		console.log("hurt", data);
-		updatePlayerScore(data.hitterId,"points",1);
 		socket.broadcast.emit("player-hurt", data);
+
+		updatePlayerScore(data.hitterId, "points", points.hurt);
 		io.sockets.emit('scoreboard-update', score);
-		
 	});
 
 	socket.on("die", function (data) {
 		console.log("die", data);
-		updatePlayerScore(data.hitterId,"points",10);
-		updatePlayerScore(data.hitterId,"kill",1);
-		updatePlayerScore(data.playerId,"dead",1);
-		io.sockets.emit('scoreboard-update', score);
 		socket.broadcast.emit("player-die", data);
+
+		updatePlayerScore(data.hitterId, "points", points.kill);
+		updatePlayerScore(data.hitterId, "kill", 1);
+		updatePlayerScore(data.playerId, "dead", 1);
+		io.sockets.emit('scoreboard-update', score);
 	});
 
 	socket.on("respawn", function (data) {
@@ -138,6 +116,28 @@ io.on('connection', function (socket) {
 			clients.splice(clientIndex, 1);
 		}
 	});
+
+	function updatePlayerScore(playerId, parameter, value) {
+		var targetPlayer = {};
+
+		clients.forEach(function (client) {
+			if (playerId == client.player.playerid) {
+				targetPlayer = client.player;
+			}
+		});
+
+		if (!score[targetPlayer.playerid]) {
+			score[playerId] = {
+				name: targetPlayer.nick,
+				kill: 0,
+				dead: 0,
+				points: 0
+			}
+		}
+
+		score[playerId][parameter] = score[playerId][parameter] + value;
+	}
+
 
 });
 

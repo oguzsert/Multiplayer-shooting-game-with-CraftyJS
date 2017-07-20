@@ -6,6 +6,7 @@
 	</script>
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
 	 crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./sprites.js"></script>
 	<script type="text/javascript" src="./efects.js"></script>
@@ -29,16 +30,22 @@
 		<input type="button" onclick="joinGame()" id="createbutton" value="join">
 		<br /><br />
 	</div>
-	<div id="game" style="border:3px dotted #000;display:none"></div>
+
+	<div id="game" style="display:none">
+		<div id="board" style="float:left; border:3px dotted #000;"></div>
+		<div id="score" style="margin-left: 20px;float:left;"></div>
+	</div>
 
 	<script>
 		var socket = null;
 		var myplayer = null;
 
+		var scoreBoard = {};
+
 		var boardWidth = 1024;
 		var boardHeight = 768;
 
-		Crafty.init(boardWidth, boardHeight, document.getElementById('game'));
+		Crafty.init(boardWidth, boardHeight, document.getElementById('board'));
 
 		function joinGame() {
 			if (myplayer !== null) {
@@ -66,7 +73,7 @@
 				.setName(nick)
 				.showName()
 				.addWeapon('rifle')
-				.initHealthBar(64, 'red')
+				.initHealthBar(48, 'red')
 				.bindSocket(socket)
 				.reset();
 
@@ -87,7 +94,7 @@
 				.setName(nick)
 				.showName()
 				.addWeapon('rifle')
-				.initHealthBar(32, 'red')
+				.initHealthBar(48, 'red')
 				.bindSocket(socket);
 
 			if (!isPristine) {
@@ -132,6 +139,7 @@
 
 			socket.on("scoreboard-update", function (scoreboardData) {
 				console.warn(scoreboardData);
+				renderScoreBoard(scoreboardData);
 			})
 
 			socket.emit("getPlayers");
@@ -139,6 +147,21 @@
 			Crafty.e("2D, Canvas, terrain").attr({ z: -1000 });
 
 			return socket;
+		}
+
+		function renderScoreBoard(board) {
+			var html = '<table><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
+			for (var player in board) {
+				html += '<tr>'
+				html += '<td>' + board[player].name + '</td>';
+				html += '<td>' + board[player].kill + '</td>';
+				html += '<td>' + board[player].dead + '</td>';
+				html += '<td>' + board[player].points + '</td>';
+				html += '</tr>'
+			}
+			html += '</tbody></table>';
+
+			$('#score').html(html);
 		}
 	</script>
 
