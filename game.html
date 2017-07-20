@@ -23,40 +23,36 @@
 	<script>
 		//var socket = io('http://127.0.0.1:3000');
 		var socket = io('http://192.168.6.80:3000');
-		
-		
-		
-		
 
 		var myplayer = null;
 
 		var boardWidth = 1024;
 		var boardHeight = 768;
-		
-		socket.on("sendCorrections",function(){
-			if(myplayer !== null){
-				socket.emit("correction",{ 
-					x: myplayer.x, 
-					y: myplayer.y, 
-					rotation: myplayer.rotation, 
+
+		socket.on("sendCorrections", function () {
+			if (myplayer !== null) {
+				socket.emit("correction", {
+					x: myplayer.x,
+					y: myplayer.y,
+					rotation: myplayer.rotation,
 					playerId: myplayer._playerId,
-					movement:myplayer.engine.move, 
-					rotate:myplayer.engine.rotate,
-					shoot:myplayer.engine.isShooting					
+					movement: myplayer.engine.move,
+					rotate: myplayer.engine.rotate,
+					shoot: myplayer.engine.isShooting
 				});
-			}		
+			}
 		});
-		
+
 		socket.on("newPlayerJoined", function (newPlayerInfo) {
-			console.log("new-player-joined", newPlayerInfo);			
-			createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color,true);			
+			console.log("new-player-joined", newPlayerInfo);
+			createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color, true);
 		});
-		
+
 
 		Crafty.init(boardWidth, boardHeight, document.getElementById('game'));
 
 		function createControllablePlayer() {
-			if(myplayer !== null){
+			if (myplayer !== null) {
 				return false;
 			}
 			var playerColor = document.getElementById("renk").value;
@@ -73,6 +69,7 @@
 				.setName(nick)
 				.showName()
 				.addWeapon('rifle')
+				.initHealthBar(24, 'red')
 				.bindSocket(socket)
 				.reset();
 
@@ -85,7 +82,7 @@
 			return myplayer;
 		}
 
-		function createOtherPlayer(id, nick, color,isPristine) {
+		function createOtherPlayer(id, nick, color, isPristine) {
 
 			var player = Crafty.e("OtherPlayer")
 				.setId(id)
@@ -93,25 +90,25 @@
 				.setName(nick)
 				.showName()
 				.addWeapon('rifle')
-				.bindSocket(socket)
-				
-				if(!isPristine){
-					player.flicker = false;
-				}
-				else{
-					player.reset();
-				}
+				.initHealthBar(24, 'red')
+				.bindSocket(socket);
+
+			if (!isPristine) {
+				player.flicker = false;
+			}
+			else {
+				player.reset();
+			}
 
 			return player;
 		}
-		socket.on("currentPlayerList",function(playerList){
-				playerList.forEach(function(player){				  
-					createOtherPlayer(player.playerid,player.nick,player.color,false);
-				});
-				socket.emit("ineedcorrections");
+		socket.on("currentPlayerList", function (playerList) {
+			playerList.forEach(function (player) {
+				createOtherPlayer(player.playerid, player.nick, player.color, false);
+			});
+			socket.emit("ineedcorrections");
 		});
 		socket.emit("getPlayers");
-		
 	</script>
 
 </body>

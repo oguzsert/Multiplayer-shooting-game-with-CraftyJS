@@ -3,8 +3,9 @@ Crafty.c("Player", {
         current: 10,
         max: 10
     },
+
     init: function () {
-        this.addComponent("2D, Canvas, Color, Collision, Flicker");
+        this.addComponent("2D, Canvas, Color, Collision, Flicker, HealthBar");
 
         this.playerType = "none";
         this._playerId = new Date().getTime();
@@ -25,14 +26,14 @@ Crafty.c("Player", {
 
         this.weapon = {
             bullet: "BasicBullet",
-            bulletspeed: 10,
+            bulletspeed: 20,
             bulletcolor: "orange",
             firerate: 10,
         };
 
         Crafty.audio.add(this.audioFiles.ENGINE_IDLE(this), "asset/sound/engine/090913-009.mp3");
         Crafty.audio.add(this.audioFiles.ENGINE(this), "asset/sound/engine/090913-002.mp3");
-        Crafty.audio.add(this.audioFiles.SHOOT(this), "asset/sound/shoot/shoot003.mp3");
+        Crafty.audio.add(this.audioFiles.SHOOT(this), "asset/sound/shoot/M4A1_Single-Kibblesbob-8540445.mp3");
         Crafty.audio.add(this.audioFiles.SHOOT3(this), "asset/sound/shoot/shoot002.mp3");
         Crafty.audio.add(this.audioFiles.EXPLODE(this), "asset/sound/explode.mp3");
         Crafty.audio.add(this.audioFiles.DAMAGE(this), "asset/sound/explodemini.mp3");
@@ -77,6 +78,8 @@ Crafty.c("Player", {
 
                 this.hp.current -= dmg;
 
+                this.updateHealthBar(this.hp.current / this.hp.max * 100);
+
                 if (this.playerType == "mine") {
                     this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: dmg });
                 }
@@ -99,9 +102,11 @@ Crafty.c("Player", {
         this.flicker = true;
         this.x = Crafty.viewport.width / 2 - this.w / 2;
         this.y = 36;
-        this.rotation = 90;
+        this.rotation = 0;
 
         this.hp = { current: 10, max: 10 };
+        
+        this.updateHealthBar(100);
 
         var that = this;
 
@@ -171,7 +176,7 @@ Crafty.c("Player", {
 
     showName: function (name) {
 
-        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor(this.color()).textFont({ size: '11px', weight: 'bold' }));
+        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor("black").textFont({ size: '11px', weight: 'bold' }));
 
         return this;
     },
@@ -370,19 +375,19 @@ Crafty.c("OtherPlayer", {
 
         this.onSocketBinded = function (socket) {
             var that = this;
-			
-			 socket.on("player-correction", function (data) {
-                if (data.playerId == that._playerId) {						 
-						that.x = data.x;
-						that.y = data.y;
-						that.rotation = data.rotation;
-						that.engine.move = data.movement;
-						that.engine.rotate = data.engine.rotate;
-						that.engine.isShooting = data.shoot;
+
+            socket.on("player-correction", function (data) {
+                if (data.playerId == that._playerId) {
+                    that.x = data.x;
+                    that.y = data.y;
+                    that.rotation = data.rotation;
+                    that.engine.move = data.movement;
+                    that.engine.rotate = data.engine.rotate;
+                    that.engine.isShooting = data.shoot;
                 }
-				
+
             });
-			
+
             socket.on("player-respawn", function (playerInfo) {
                 if (playerInfo.playerId == that._playerId) {
                     console.log(that._playerId, that.name, "PLAYER-RESPAWN", playerInfo);
@@ -507,4 +512,86 @@ Crafty.c("OtherPlayer", {
         return this;
     }
 
+});
+
+Crafty.c("HealthBar", {
+    init: function () {
+        this.requires("2D");
+
+        this._pbMaxValue = 100;
+        this._pbFilledFraction = 1;
+        this._pbHeight = 3;
+        this._pbY = 34;
+    },
+
+    initHealthBar: function (totalWidth, filledColor) {
+        
+        this._pbTotalWidth = totalWidth;
+
+        this._pbBlockWidth = this._pbTotalWidth * this._pbFilledFraction;
+
+        this._pbLowerBlock = Crafty.e("2D, Canvas, Color").color(filledColor).attr({
+            x: this._x,
+            y: this._y + this._pbY,
+            w: this._pbBlockWidth, 
+            h: this._pbHeight,
+            z: 100
+        });
+
+        this._pbHigherBlock = Crafty.e("2D, Canvas, Color").color(filledColor == 'gray'?'black':'gray').attr({
+            x: this._x,
+            y: this._y + this._pbY,
+            w: this._pbBlockWidth, 
+            h: this._pbHeight,
+            z: 1
+        });;
+
+        this.attach(this._pbLowerBlock);
+        this.attach(this._pbHigherBlock);
+
+        this._updateBarDimension();
+
+        return this;
+    },
+
+    updateHealthBar: function (val) {
+
+        this._pbFilledFraction = val / this._pbMaxValue;
+
+        this._updateBarDimension();
+
+        return this;
+    },
+
+    _updateBarDimension: function () {
+        
+        this._pbBlockWidth = this._pbTotalWidth * this._pbFilledFraction;
+
+        this._pbLowerBlock.attr({
+            //x: this._x * Math.cos(this.rotation * Math.PI / 180), 
+            //y: this._y * Math.sin(this.rotation * Math.PI / 180) + this._pbY,
+            w: this._pbBlockWidth, 
+        });
+
+        // this._pbHigherBlock.attr({
+        //     x: this._pbLowerBlock.x + (this._pbBlockWidth + Math.cos(this.rotation * Math.PI / 180)),
+        //     y: this._pbLowerBlock.y +(Math.sin(this.rotation * Math.PI / 180) + this._pbBlockWidth ),
+        //     w: this._pbTotalWidth - this._pbBlockWidth, 
+        // });
+
+        console.log("this._pbFilledFraction", this._pbFilledFraction);
+        console.log("this._pbBlockWidth", this._pbBlockWidth);
+
+        console.log("this._pbLowerBlock.attr('x')", this._pbLowerBlock.attr('x'));
+        console.log("this._pbLowerBlock.attr('y')", this._pbLowerBlock.attr('y'));
+        console.log("this._pbLowerBlock.attr('w')", this._pbLowerBlock.attr('w'));
+        console.log("this._pbLowerBlock.attr('h')", this._pbLowerBlock.attr('h'));
+
+        console.log("this._pbHigherBlock.attr('x')", this._pbHigherBlock.attr('x'));
+        console.log("this._pbHigherBlock.attr('y')", this._pbHigherBlock.attr('y'));
+        console.log("this._pbHigherBlock.attr('w')", this._pbHigherBlock.attr('w'));
+        console.log("this._pbHigherBlock.attr('h')", this._pbHigherBlock.attr('h'));
+
+        return this;
+    },
 });

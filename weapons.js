@@ -31,7 +31,7 @@ Crafty.c("BasicBullet", {
                 this.y += this.yspeed;
             })
             .attr({
-                dmg: 2,
+                dmg: 1,
                 w: 5,
                 h: 5
             });

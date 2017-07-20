@@ -13,6 +13,7 @@ Crafty.c("Damage", {
     }
 });
 
+
 Crafty.c("DieExplosion", {
     init: function () {
         var e = this.addComponent("2D", "Canvas", "SpriteAnimation", "explosion1")
