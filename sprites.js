@@ -45,6 +45,10 @@ Crafty.sprite(1024,768,game_path+"asset/img/mapterrain.png",{
 	terrain:[0,0]	
 });
 
+Crafty.sprite(5,13,game_path + "asset/img/weapon1_small.png",{
+    laser1:[0,0] 
+});
+
 
 
 
