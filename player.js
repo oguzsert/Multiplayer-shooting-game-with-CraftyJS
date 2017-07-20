@@ -97,7 +97,7 @@ Crafty.c("Player", {
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
         })
-            .bind("Hurt", function (dmg) {
+            .bind("Hurt", function (dmg,hitterId) {
 
                 Crafty.e("Damage").attr({
                     x: this.x,

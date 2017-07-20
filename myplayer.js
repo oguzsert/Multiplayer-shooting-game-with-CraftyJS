@@ -7,7 +7,7 @@ Crafty.c("MyPlayer", {
                 if (this.flicker) return;
                 var bulletOwnerId = hitData[0].obj.ownerId;
                 if (this._playerId != bulletOwnerId) {
-                    this.trigger("Hurt", hitData[0].obj.dmg);
+                    this.trigger("Hurt", hitData[0].obj.dmg,hitData[0].obj.dmg.ownerId);
                     hitData[0].obj.destroy();
                 }
             })
