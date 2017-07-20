@@ -256,7 +256,7 @@ Crafty.c("Player", {
 
     shoot: function () {
 
-        var bullet = Crafty.e(this.weapon.bullet).color(this.color());
+        var bullet = Crafty.e(this.weapon.bullet);
 
         bullet.attr({
             ownerId: this._playerId,

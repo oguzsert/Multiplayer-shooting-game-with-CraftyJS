@@ -25,14 +25,14 @@ Crafty.c("Bullet", {
 Crafty.c("BasicBullet", {
     init: function () {
         this
-            .addComponent("Bullet")
+            .addComponent("Bullet, laser1")
             .bind("EnterFrame", function (frame) {
                 this.x += this.xspeed;
                 this.y += this.yspeed;
             })
             .attr({
                 dmg: 1,
-                w: 5,
+                w: 13,
                 h: 5
             });
     }
