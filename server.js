@@ -8,9 +8,7 @@ var score = {};
 io.on('connection', function (socket) {
 	console.log('new connection:', socket.id);
 	
-	function createPlayerScore(playerId){
-		
-	}
+	
 	
 	function updatePlayerScore(playerId,parameter,value){		
 		var targetPlayer = {};
@@ -21,11 +19,13 @@ io.on('connection', function (socket) {
 			}		
 		});
 		
-		if(!score[targetPlayer.player.playerid]){
+		console.log(targetPlayer,"COMOLOKKO",clients);
+		
+		if(!score[targetPlayer.playerid]){
 			score[playerId]  = {
-				name:targetPlayer.player.name,
+				name:targetPlayer.player.nick,
 				kill:0,
-				dead:0
+				dead:0,
 				points:0
 			}
 		}
@@ -86,7 +86,7 @@ io.on('connection', function (socket) {
 
 	socket.on("hurt", function (data) {
 		console.log("hurt", data);
-		updatePlayerScore(data.hitterId,"point",1);
+		updatePlayerScore(data.hitterId,"points",1);
 		socket.broadcast.emit("player-hurt", data);
 		io.sockets.emit('scoreboard-update', score);
 		
@@ -94,9 +94,9 @@ io.on('connection', function (socket) {
 
 	socket.on("die", function (data) {
 		console.log("die", data);
-		updatePlayerScore(data.hitterId,"point",10);
+		updatePlayerScore(data.hitterId,"points",10);
 		updatePlayerScore(data.hitterId,"kill",1);
-		updatePlayerScore(data._playerId,"dead",1);
+		updatePlayerScore(data.playerId,"dead",1);
 		io.sockets.emit('scoreboard-update', score);
 		socket.broadcast.emit("player-die", data);
 	});

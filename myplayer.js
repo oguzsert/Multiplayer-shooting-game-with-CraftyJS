@@ -5,9 +5,11 @@ Crafty.c("MyPlayer", {
         this.addComponent("Player")
             .onHit("Bullet", function (hitData) {
                 if (this.flicker) return;
+				
                 var bulletOwnerId = hitData[0].obj.ownerId;
                 if (this._playerId != bulletOwnerId) {
-                    this.trigger("Hurt", hitData[0].obj.dmg,hitData[0].obj.dmg.ownerId);
+					
+                    this.trigger("Hurt", {damage:hitData[0].obj.dmg,ownerId:bulletOwnerId});
                     hitData[0].obj.destroy();
                 }
             })

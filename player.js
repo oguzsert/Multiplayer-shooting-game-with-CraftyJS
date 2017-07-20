@@ -97,26 +97,28 @@ Crafty.c("Player", {
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
         })
-            .bind("Hurt", function (dmg,hitterId) {
+            .bind("Hurt", function (data) {
 
                 Crafty.e("Damage").attr({
                     x: this.x,
                     y: this.y
                 });
 
-                this.hp.current -= dmg;
+                this.hp.current -= data.damage;
 
                 this.updateHealthBar(this.hp.current / this.hp.max * 100);
 
                 if (this.playerType == "mine") {
-                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: dmg ,hitterId:hitterId});
+					console.info("HITTER-ID",data.ownerId);
+                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.damage ,hitterId:data.ownerId});
                 }
 
                 console.log("player:" + this.name, this.playerType, "hp:" + this.hp.current);
 
                 if (this.hp.current <= 0) {
                     if (this.playerType == "mine") {
-                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId ,hitterId:hitterId});
+						console.info("HITTER-ID",data.ownerId);
+                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId ,hitterId:data.ownerId});
                         this.die();
                     }
                 }
@@ -255,7 +257,7 @@ Crafty.c("Player", {
     },
 
     shoot: function () {
-
+		
         var bullet = Crafty.e(this.weapon.bullet);
 
         bullet.attr({
