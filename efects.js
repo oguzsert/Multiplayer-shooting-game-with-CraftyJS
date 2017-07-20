@@ -2,7 +2,7 @@ Crafty.c("Damage", {
     init: function () {
         this.addComponent("2D", "Canvas", "dmg");
 
-        Crafty.audio.play("damage", 1, 1);
+        //Crafty.audio.play("damage", 1, 1);
 
         var that = this;
 
