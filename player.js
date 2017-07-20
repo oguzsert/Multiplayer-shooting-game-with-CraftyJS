@@ -169,8 +169,13 @@ Crafty.c("Player", {
 
     respawn: function () {
         this.reset();
-
         return this;
+    },
+
+    randomPlace() {
+        var x = Crafty.math.randomInt(0, Crafty.viewport.width);
+        var y = Crafty.math.randomInt(0, Crafty.viewport.height);
+        this.place(x, y);
     },
 
     place: function (x, y, r) {
@@ -337,7 +342,7 @@ Crafty.c("HealthBar", {
             y: this._y + this._pbY,
             w: this._pbBlockWidth,
             h: this._pbHeight,
-            z: 100
+            z: 10000
         });
 
         this._pbHigherBlock = Crafty.e("2D, Canvas, Color").color(filledColor == 'gray' ? 'black' : 'gray').attr({
@@ -345,7 +350,7 @@ Crafty.c("HealthBar", {
             y: this._y + this._pbY,
             w: this._pbBlockWidth,
             h: this._pbHeight,
-            z: 1
+            z: 100
         });;
 
         this.attach(this._pbLowerBlock);
@@ -362,6 +367,7 @@ Crafty.c("HealthBar", {
 
         this._pbLowerBlock.attr({
             w: this._pbBlockWidth,
+            z: 10000
         });
 
         if (this._pbFilledFraction >= 0.8 && this._pbFilledFraction <= 1)

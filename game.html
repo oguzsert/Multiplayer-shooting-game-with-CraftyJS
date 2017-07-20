@@ -38,9 +38,8 @@
 
 	<script>
 		var socket = null;
-		var myplayer = null;
 
-		var scoreBoard = {};
+		var myplayer = null;
 
 		var boardWidth = 1024;
 		var boardHeight = 768;
@@ -137,9 +136,8 @@
 				socket.emit("ineedcorrections");
 			});
 
-			socket.on("scoreboard-update", function (scoreboardData) {
-				console.warn(scoreboardData);
-				renderScoreBoard(scoreboardData);
+			socket.on("scoreboard-update", function (clients) {
+				renderScoreBoard(clients);
 			})
 
 			socket.emit("getPlayers");
@@ -149,15 +147,21 @@
 			return socket;
 		}
 
-		function renderScoreBoard(board) {
+		function renderScoreBoard(clients) {
+			
+			console.log("scores", clients);
+
 			var html = '<table><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
-			for (var player in board) {
-				html += '<tr>'
-				html += '<td>' + board[player].name + '</td>';
-				html += '<td>' + board[player].kill + '</td>';
-				html += '<td>' + board[player].dead + '</td>';
-				html += '<td>' + board[player].points + '</td>';
-				html += '</tr>'
+			for (var index = 0; index < clients.length; ++index) {
+				var client = clients[index];
+				if (client && client.player.score) {
+					html += '<tr>'
+					html += '<td>' + client.player.nick + '</td>';
+					html += '<td>' + client.player.score.kill + '</td>';
+					html += '<td>' + client.player.score.dead + '</td>';
+					html += '<td>' + client.player.score.points + '</td>';
+					html += '</tr>'
+				}
 			}
 			html += '</tbody></table>';
 
