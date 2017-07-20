@@ -4,36 +4,36 @@ Crafty.c("Player", {
         max: 10
     },
 
-     init: function () {
+    init: function () {
         this.addComponent("2D, Canvas, Collision, Flicker, HealthBar");
 
         this.playerType = "none";
         this._playerId = new Date().getTime();
         this._sessionId = new Date().getTime();
-		
+
         this.isActive = true;
         this.w = 32;
         this.h = 24;
         this.z = 10;
         this.rotation = 0;
         this.isShooting = false;
-		this.origin('center');
-		var colour = "";
-		this.color = function(){
-			return colour;
-		}
+        this.origin('center');
+        var colour = "";
+        this.color = function () {
+            return colour;
+        }
 
         this.engine = {
             move: 'none',
             movespeed: 10,
             rotate: 'none'
         };
-		
-		this.setColor = function(color){			
-			colour = color;			
-			this.addComponent(color+"tank");						
-			return this;
-		}
+
+        this.setColor = function (color) {
+            colour = color;
+            this.addComponent(color + "tank");
+            return this;
+        }
 
         this.weapon = {
             bullet: "BasicBullet",
@@ -72,6 +72,23 @@ Crafty.c("Player", {
             if (this.engine.move == 'forward') {
                 newX = this.x + this.engine.movespeed * Math.cos(this.rotation * Math.PI / 180);
                 newY = this.y + this.engine.movespeed * Math.sin(this.rotation * Math.PI / 180);
+
+                if (newX > Crafty.viewport.width) {
+                    newX = 0;
+                }
+
+                if (newX < 0) {
+                    newX = Crafty.viewport.width;
+                }
+
+                if (newY > Crafty.viewport.height) {
+                    newY = 0;
+                }
+
+                if (newY < 0) {
+                    newY = Crafty.viewport.height;
+                }
+
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
             else if (this.engine.move == 'backward') {
