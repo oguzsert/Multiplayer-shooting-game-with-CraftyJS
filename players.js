@@ -12,8 +12,8 @@ Crafty.c("Player", {
         this._sessionId = new Date().getTime();
 
         this.isActive = true;
-        this.w = 16;
-        this.h = 16;
+        this.w = 20;
+        this.h = 20;
         this.z = 10;
         this.rotation = 0;
         this.isShooting = false;
@@ -162,7 +162,7 @@ Crafty.c("Player", {
         this.origin('center');
 
         if (type == 'rifle') {
-            var rifle = Crafty.e("2D, Canvas, Color").attr({ x: 16, y: 5, w: 8, h: 5, z: 10 }).color(this.color());
+            var rifle = Crafty.e("2D, Canvas, Color").attr({ x: this.w, y: this.h / 3, w: this.w / 2, h: this.h / 3, z: 10 }).color(this.color());
             this.attach(rifle);
         }
 
@@ -176,7 +176,7 @@ Crafty.c("Player", {
 
     showName: function (name) {
 
-        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + 20 }).text(this.name).textColor("black").textFont({ size: '11px', weight: 'bold' }));
+        this.attach(Crafty.e("2D, DOM, Text").attr({ x: this.x, y: this.y + this.h + 2 }).text(this.name).textColor("black").textFont({ size: '10px', weight: 'bold' }));
 
         return this;
     },
@@ -232,7 +232,7 @@ Crafty.c("Player", {
         bullet.attr({
             ownerId: this._playerId,
             x: this.x,
-            y: this.y + 4,
+            y: this.y,
             rotation: this.rotation,
             xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
             yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
@@ -521,7 +521,7 @@ Crafty.c("HealthBar", {
         this._pbMaxValue = 100;
         this._pbFilledFraction = 1;
         this._pbHeight = 3;
-        this._pbY = 34;
+        this._pbY = 40;
     },
 
     initHealthBar: function (totalWidth, filledColor) {
@@ -549,8 +549,6 @@ Crafty.c("HealthBar", {
         this.attach(this._pbLowerBlock);
         this.attach(this._pbHigherBlock);
 
-        this._updateBarDimension();
-
         return this;
     },
 
@@ -558,40 +556,12 @@ Crafty.c("HealthBar", {
 
         this._pbFilledFraction = val / this._pbMaxValue;
 
-        this._updateBarDimension();
-
-        return this;
-    },
-
-    _updateBarDimension: function () {
-        
         this._pbBlockWidth = this._pbTotalWidth * this._pbFilledFraction;
 
         this._pbLowerBlock.attr({
-            //x: this._x * Math.cos(this.rotation * Math.PI / 180), 
-            //y: this._y * Math.sin(this.rotation * Math.PI / 180) + this._pbY,
             w: this._pbBlockWidth, 
         });
 
-        // this._pbHigherBlock.attr({
-        //     x: this._pbLowerBlock.x + (this._pbBlockWidth + Math.cos(this.rotation * Math.PI / 180)),
-        //     y: this._pbLowerBlock.y +(Math.sin(this.rotation * Math.PI / 180) + this._pbBlockWidth ),
-        //     w: this._pbTotalWidth - this._pbBlockWidth, 
-        // });
-
-        console.log("this._pbFilledFraction", this._pbFilledFraction);
-        console.log("this._pbBlockWidth", this._pbBlockWidth);
-
-        console.log("this._pbLowerBlock.attr('x')", this._pbLowerBlock.attr('x'));
-        console.log("this._pbLowerBlock.attr('y')", this._pbLowerBlock.attr('y'));
-        console.log("this._pbLowerBlock.attr('w')", this._pbLowerBlock.attr('w'));
-        console.log("this._pbLowerBlock.attr('h')", this._pbLowerBlock.attr('h'));
-
-        console.log("this._pbHigherBlock.attr('x')", this._pbHigherBlock.attr('x'));
-        console.log("this._pbHigherBlock.attr('y')", this._pbHigherBlock.attr('y'));
-        console.log("this._pbHigherBlock.attr('w')", this._pbHigherBlock.attr('w'));
-        console.log("this._pbHigherBlock.attr('h')", this._pbHigherBlock.attr('h'));
-
         return this;
-    },
+    }
 });

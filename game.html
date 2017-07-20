@@ -4,6 +4,8 @@
 	<script>
 		var game_path = location.href.lastIndexOf("/") !== -1 ? location.href.substring(0, location.href.lastIndexOf("/") + 1) : location.href;
 	</script>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	 crossorigin="anonymous"></script>
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./sprites.js"></script>
 	<script type="text/javascript" src="./efects.js"></script>
@@ -13,52 +15,45 @@
 </head>
 
 <body style="font-family:tahoma;">
-	<input type="text" placeholder="nick" id="nick" value="Keke">
-	<input type="text" placeholder="renk" id="renk" value="red">
-	<input type="button" onclick="createControllablePlayer()" id="createbutton" value="Oyuncu Oluştur">
-	<br /><br />
-
-	<div id="game" style="border:1px dotted #000;"></div>
+	<div id="login">
+		<input type="text" placeholder="nick" id="nick" value="Keke">
+		<input type="text" placeholder="renk" id="renk" value="red">
+		<select id="server">
+			<option value="http://127.0.0.1:3000">local</option>
+			<option value="http://192.168.6.80:3000">oguz</option>
+			<option value="http://192.168.6.217:3000">baris</option>
+			<option value="http://127.0.0.1:3000">uzaklar</option>
+		</select>
+		<input type="button" onclick="joinGame()" id="createbutton" value="Oyuncu Oluştur">
+		<br /><br />
+	</div>
+	<div id="game" style="border:1px dotted #000;display:none"></div>
 
 	<script>
-		//var socket = io('http://127.0.0.1:3000');
-		var socket = io('http://192.168.6.80:3000');
-
+		var socket = null;
 		var myplayer = null;
 
 		var boardWidth = 1024;
 		var boardHeight = 768;
 
-		socket.on("sendCorrections", function () {
-			if (myplayer !== null) {
-				socket.emit("correction", {
-					x: myplayer.x,
-					y: myplayer.y,
-					rotation: myplayer.rotation,
-					playerId: myplayer._playerId,
-					movement: myplayer.engine.move,
-					rotate: myplayer.engine.rotate,
-					shoot: myplayer.engine.isShooting
-				});
-			}
-		});
-
-		socket.on("newPlayerJoined", function (newPlayerInfo) {
-			console.log("new-player-joined", newPlayerInfo);
-			createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color, true);
-		});
-
-
 		Crafty.init(boardWidth, boardHeight, document.getElementById('game'));
 
-		function createControllablePlayer() {
+		function joinGame() {
 			if (myplayer !== null) {
 				return false;
 			}
+
+			var serverIp = $('#server option:selected').val();
+
+			socket = connectServer(serverIp);
+
 			var playerColor = document.getElementById("renk").value;
 			var playerNick = document.getElementById("nick").value;
 
 			createMyPlayer(playerNick, playerColor);
+
+			$('#login').hide();
+			$('#game').show();
 		}
 
 		function createMyPlayer(nick, color) {
@@ -102,13 +97,42 @@
 
 			return player;
 		}
-		socket.on("currentPlayerList", function (playerList) {
-			playerList.forEach(function (player) {
-				createOtherPlayer(player.playerid, player.nick, player.color, false);
+
+		function connectServer(serverIp) {
+
+			var socket = io(serverIp);
+
+			socket.on("sendCorrections", function () {
+
+				socket.emit("correction", {
+					x: myplayer.x,
+					y: myplayer.y,
+					rotation: myplayer.rotation,
+					playerId: myplayer._playerId,
+					movement: myplayer.engine.move,
+					rotate: myplayer.engine.rotate,
+					shoot: myplayer.engine.isShooting
+				});
+
 			});
-			socket.emit("ineedcorrections");
-		});
-		socket.emit("getPlayers");
+
+			socket.on("newPlayerJoined", function (newPlayerInfo) {
+				console.log("new-player-joined", newPlayerInfo);
+				createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color, true);
+			});
+
+			socket.on("currentPlayerList", function (playerList) {
+				playerList.forEach(function (player) {
+					createOtherPlayer(player.playerid, player.nick, player.color, false);
+				});
+				socket.emit("ineedcorrections");
+			});
+
+			socket.emit("getPlayers");
+
+			return socket;
+		}
+
 	</script>
 
 </body>
