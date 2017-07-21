@@ -72,11 +72,13 @@ Crafty.c("Player", {
 
                 if (this.weapon.heat.overheated && this.weapon.heat.current < 25) {
                     this.weapon.heat.overheated = false;
-                    Crafty.trigger("HideText");
+                    if (this.playerType == 'mine') {
+                        Crafty.trigger("HideText");
+                    }
                 }
             }
 
-            var rotationspeed = this.engine.move == 'none' ? 1 : 5;
+            var rotationspeed = this.engine.move == 'none' ? 2 : 5;
             if (this.engine.rotate == 'right') {
                 this.rotation += rotationspeed;
             }
@@ -207,7 +209,6 @@ Crafty.c("Player", {
     addWeapon: function (type) {
         this.origin('center');
 
-
         return this;
     },
 
@@ -292,8 +293,10 @@ Crafty.c("Player", {
             this.weapon.heat.current += this.weapon.heat.heatPerShoot;
 
         if (this.weapon.heat.current >= this.weapon.heat.max) {
-            Crafty.trigger("ShowText", "Weapon Overheated!");
             this.weapon.heat.overheated = true;
+            if (this.playerType == 'mine') {
+                Crafty.trigger("ShowText", "Weapon Overheated!");
+            }
         }
     },
 
