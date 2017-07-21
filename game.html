@@ -211,19 +211,15 @@
 			return socket;
 		}
 		
-		function createScoreBoard(dataObject){
-			$("#scoreboard-table").css("display","block");
-			$("#scoreboard").html("");
-			Object.keys(dataObject).forEach(function(id){
-				var playerData = dataObject[id];				
-				$("#scoreboard").append("<tr><td>"+playerData.name+"</td>"+"<td>"+playerData.kill+"</td>"+"<td>"+playerData.dead+"</td>"+"<td>"+playerData.points+"</td></tr>");
-			});
-			
-		}
+		
 
 		function renderScoreBoard(clients) {
 
 			console.log("scores", clients);
+			
+			clients.sort(function(a,b) {
+					return b.player.score.points - a.player.score.points;
+			});
 
 			var html = '<table style="color:white;"><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
 			for (var index = 0; index < clients.length; ++index) {
