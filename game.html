@@ -96,6 +96,8 @@
 
 		Crafty.init(boardWidth, boardHeight, document.getElementById('board'));
 
+		Crafty.e("2D, Canvas, terrain").attr({ z: -1000 });
+
 		var infos = {
 			alert: $('.alert')
 		}
@@ -125,6 +127,8 @@
 
 			createMyPlayer(playerNick, playerColor);
 
+			socket.emit("getPlayers");
+
 			$('#login').hide();
 			$('#game').show();
 		}
@@ -136,7 +140,6 @@
 				.setColor(color)
 				.setName(nick)
 				.showName()
-				.initBar('healthBar', 48)
 				.bindSocket(socket)
 				.reset();
 
@@ -145,6 +148,8 @@
 				nick: nick,
 				color: color,
 			});
+
+			console.log('myplayer:', myplayer);
 
 			return myplayer;
 		}
@@ -156,7 +161,6 @@
 				.setColor(color)
 				.setName(nick)
 				.showName()
-				.initBar('healthBar', 48)
 				.bindSocket(socket);
 
 			if (!isPristine) {
@@ -182,7 +186,7 @@
 					playerId: myplayer._playerId,
 					movement: myplayer.engine.move,
 					rotate: myplayer.engine.rotate,
-					shoot: myplayer.engine.isShooting
+					//shoot: myplayer.engine.isShooting
 				});
 
 			});
@@ -215,12 +219,7 @@
 
 			socket.on("scoreboard-update", function (clients) {
 				renderScoreBoard(clients);
-			})
-
-
-			socket.emit("getPlayers");
-
-			Crafty.e("2D, Canvas, terrain").attr({ z: -1000 });
+			})			
 
 			return socket;
 		}

@@ -38,18 +38,204 @@ Crafty.c("BasicBullet", {
     }
 });
 
-Crafty.c("BigBullet", {
+Crafty.c("FireBall", {
     init: function () {
         this
-            .addComponent("Bullet")
+            .addComponent("Bullet", "SpriteAnimation", "fireball")
+            .reel("fire", 500, 0, 0, 10)
+            .animate("fire")
+            .bind("AnimationEnd", function () {
+                this.destroy();
+                console.log("FireBall destroyed");
+            })
             .bind("EnterFrame", function (frame) {
                 this.x += this.xspeed;
                 this.y += this.yspeed;
             })
             .attr({
-                dmg: 3,
-                w: 10,
-                h: 10
+                dmg: 10,
+                w: 32,
+                h: 32
             });
     }
+});
+
+Crafty.c("Tabanca", {
+    init: function () {
+
+        this.weapon = {
+            bullet: "BasicBullet",
+            bulletspeed: 20,
+            firerate: 5,
+            shooting: false,
+            heat: {
+                overheated: false,
+                current: 0,
+                max: 100,
+                heatPerShoot: 4
+            }
+        };
+
+        this.updateBar('shootBar', 100);
+
+        this.bind("EnterFrame", function (frame) {
+
+            if (frame.frame % this.weapon.firerate == 0) {
+                if (this.weapon.shooting && !this.weapon.heat.overheated) {
+                    this.shoot();
+                } else if (this.weapon.heat.current > 0) {
+                    this.weapon.heat.current -= this.weapon.heat.heatPerShoot;
+                }
+
+                if (this.weapon.heat.overheated && this.weapon.heat.current < 25) {
+                    this.weapon.heat.overheated = false;
+                    if (this.playerType == 'mine') {
+                        Crafty.trigger("HideText");
+                    }
+                }
+
+                this.updateBar('shootBar', this.weapon.heat.max - this.weapon.heat.current)
+            }
+        });
+    },
+
+    shoot: function () {
+
+        if (this.flicker) return;
+
+        var bullet = Crafty.e(this.weapon.bullet);
+
+        bullet.attr({
+            ownerId: this._playerId,
+            x: this.x,
+            y: this.y,
+            rotation: this.rotation,
+            xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
+            yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
+        });
+
+        if (this.playerType == 'mine') {
+            Crafty.audio.stop(this.audioFiles.SHOOT(this));
+            Crafty.audio.play(this.audioFiles.SHOOT(this), 1, 0.1);
+        }
+
+        if (this.weapon.heat.current < this.weapon.heat.max)
+            this.weapon.heat.current += this.weapon.heat.heatPerShoot;
+
+        if (this.weapon.heat.current >= this.weapon.heat.max) {
+            this.weapon.heat.overheated = true;
+            if (this.playerType == 'mine') {
+                Crafty.trigger("ShowText", "Weapon Overheated!");
+            }
+        }
+    },
+
+    startShoot: function () {
+        this.weapon.shooting = true;
+    },
+
+    stopShoot: function () {
+        this.weapon.shooting = false;
+    },
+});
+
+
+Crafty.c("Sapan", {
+    init: function () {
+
+        this.weapon = {
+            bullet: 'FireBall',
+            bulletspeed: 20,
+            bulletspeedbase: 20,
+            heat: {
+                overheated: false,
+                current: 0,
+                max: 100,
+                heatPerShoot: 100
+            },
+            load: {
+                loading: false,
+                ready: false,
+                power: 0,
+                maxPower: 100,
+                powerLimitToShoot: 25,
+            },
+            resetLoad: function () {
+                this.loading = false;
+                this.ready = false;
+                this.power = 0;
+            }
+        };
+
+        this.bind("EnterFrame", function (frame) {
+
+            if (this.flicker) return;
+            if(!this.weapon.load) return;
+            
+            if (this.weapon.load.loading) {
+                this.weapon.load.power += 2;
+            } else if (this.weapon.load.power > 0 && !this.weapon.load.ready) {
+                console.log("unloading", this.weapon.load.power);
+                this.weapon.load.power -= 0.2;
+                if (this.weapon.load.power < 0) this.weapon.load.power = 0;
+            }
+
+            if (this.weapon.load.power > this.weapon.load.maxPower + 20) {
+                this.weapon.load.ready = true;
+                this.weapon.load.power = this.weapon.load.maxPower
+            }
+
+            if (this.weapon.load.ready) {
+
+                if (this.weapon.load.power > this.weapon.load.powerLimitToShoot) {
+                    if (this.weapon.load.power > this.weapon.load.maxPower) {
+                        this.weapon.load.power = this.weapon.load.maxPower;
+                    }
+                    console.log('shoot power:', this.weapon.load.power);
+                    this.weapon.bulletspeed = this.weapon.bulletspeedbase * this.weapon.load.power / this.weapon.load.maxPower;
+                    this.shoot();
+                    this.weapon.resetLoad.apply(this.weapon.load);
+                } else {
+                    this.weapon.load.ready = false;
+                }
+            }
+
+            var bar = this.weapon.load.maxPower - this.weapon.load.power;
+
+            this.updateBar('shootBar', bar < 0 ? 0 : bar);
+        });
+    },
+
+    shoot: function () {
+
+        if (this.flicker) return;
+
+        var bullet = Crafty.e(this.weapon.bullet);
+
+        bullet.attr({
+            ownerId: this._playerId,
+            x: this.x,
+            y: this.y,
+            rotation: this.rotation,
+            xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
+            yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
+        });
+
+        if (this.playerType == 'mine') {
+            Crafty.audio.stop(this.audioFiles.SHOOT(this));
+            Crafty.audio.play(this.audioFiles.SHOOT(this), 1, 0.1);
+        }
+    },
+
+    startShoot: function () {
+        console.log('startShoot');
+        this.weapon.load.loading = true;
+        this.weapon.load.ready = false;
+    },
+
+    stopShoot: function () {
+        console.log('stopShoot');
+        this.weapon.load.loading = false;
+        this.weapon.load.ready = true;
+    },
 });

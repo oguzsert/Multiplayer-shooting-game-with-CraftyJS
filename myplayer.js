@@ -41,8 +41,10 @@ Crafty.c("MyPlayer", {
                 } else if (e.key == Crafty.keys.SPACE) {
                     this.socket.emit("start-shoot", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId });
                     this.startShoot();
-                } else if (e.key == Crafty.keys.X) {
-                    this.shoot3();
+                } else if (e.key == Crafty.keys['1']) {
+                    this.selectWeapon('Tabanca');
+                }else if (e.key == Crafty.keys['2']) {
+                    this.selectWeapon('Sapan');
                 }
 
             })

@@ -16,7 +16,6 @@ Crafty.c("Player", {
         this.h = 24;
         this.z = 10;
         this.rotation = 0;
-        this.isShooting = false;
 
         this.origin('center');
 
@@ -31,40 +30,14 @@ Crafty.c("Player", {
             rotate: 'none'
         };
 
+        // this.weapon = {
+
+        // };
+
         this.setColor = function (color) {
             colour = color;
             this.addComponent(color + "tank");
             return this;
-        }
-
-        // this.weapon = {
-        //     bullet: "BasicBullet",
-        //     bulletspeed: 20,
-        //     firerate: 5,
-        //     heat: {
-        //         overheated: false,
-        //         current: 0,
-        //         max: 100,
-        //         heatPerShoot: 4
-        //     }
-        // };
-
-        this.weapon = {
-            bullet: "BasicBullet",
-            bulletspeed: 20,
-            firerate: 5,
-            heat: {
-                overheated: false,
-                current: 0,
-                max: 100,
-                heatPerShoot: 4
-            },
-
-            isLoadingToShoot: false,
-            maxPower: 100,
-            power: 0,
-            shootPowerRateLimit: 25,
-            shoot: false
         }
 
         Crafty.audio.add(this.audioFiles.ENGINE_IDLE(this), "asset/sound/engine/090913-009.mp3");
@@ -78,48 +51,10 @@ Crafty.c("Player", {
             return newX >= 0 && newX <= Crafty.viewport.width && newY >= 0 && newY <= Crafty.viewport.height
         };
 
-
-
         this.bind("EnterFrame", function (frame) {
 
-            // if (this.weapon.isLoadingToShoot) {
-            //     console.log('this.weapon.isLoadingToShoot', this.weapon.isLoadingToShoot);
-            //     this.weapon.power += 1;
-            //     if (this.weapon.power > this.weapon.maxPower) this.weapon.power = this.weapon.maxPower;
-            // }
-
-            // var powerRate = this.weapon.power / this.weapon.maxPower;
-
-            // if (this.weapon.shoot && powerRate > this.weapon.shootPowerRateLimit) {
-            //     console.log('shoot', this.weapon.power);
-            //     this.weapon.bulletspeed = 100 * powerRate ;
-            //     this.shoot();
-            //     this.weapon.power = 0;
-            //     this.weapon.shoot = false;
-            // } else {
-            //     this.weapon.shoot = false;
-            // }
-
-            if (frame.frame % this.weapon.firerate == 0) {
-                if (this.isShooting && !this.weapon.heat.overheated) {
-                    this.shoot();
-
-                } else {
-                    if (this.weapon.heat.current > 0)
-                        this.weapon.heat.current -= this.weapon.heat.heatPerShoot;
-                }
-
-                if (this.weapon.heat.overheated && this.weapon.heat.current < 25) {
-                    this.weapon.heat.overheated = false;
-                    if (this.playerType == 'mine') {
-                        Crafty.trigger("HideText");
-                    }
-                }
-
-                this.updateBar('shootBar', this.weapon.heat.max - this.weapon.heat.current)
-            }
-
             var rotationspeed = this.engine.move == 'none' ? 2 : 5;
+
             if (this.engine.rotate == 'right') {
                 this.rotation += rotationspeed;
             }
@@ -179,7 +114,10 @@ Crafty.c("Player", {
                 }
             });
 
+        this.initBar('healthBar', 48);
         this.initBar('shootBar', 56);
+
+        this.selectWeapon('Sapan');
 
         Crafty.audio.play(this.audioFiles.ENGINE_IDLE(this), -1, 0.2);
     },
@@ -199,7 +137,7 @@ Crafty.c("Player", {
 
         setTimeout(function () {
             that.flicker = false;
-        }, 3000);
+        }, 2000);
 
         return this;
     },
@@ -217,7 +155,7 @@ Crafty.c("Player", {
 
         this.movePlayer("stopMovement");
         this.rotatePlayer("stopRotate");
-        this.stopShoot();
+        //this.stopShoot();
 
         var that = this;
         setTimeout(function () {
@@ -233,24 +171,12 @@ Crafty.c("Player", {
         return this;
     },
 
-    randomPlace() {
-        var x = Crafty.math.randomInt(0, Crafty.viewport.width);
-        var y = Crafty.math.randomInt(0, Crafty.viewport.height);
-        this.place(x, y);
-    },
-
     place: function (x, y, r) {
         this.x = x;
         this.y = y;
 
         if (r != undefined)
             this.rotation = r;
-
-        return this;
-    },
-
-    addWeapon: function (type) {
-        this.origin('center');
 
         return this;
     },
@@ -304,46 +230,15 @@ Crafty.c("Player", {
         }
     },
 
-    startShoot: function (shooter) {
-        this.isShooting = true;
-        this.weapon.isLoadingToShoot = true;
-    },
+    selectWeapon: function (weapon) {
 
-    stopShoot: function () {
-        this.isShooting = false;
-        this.weapon.isLoadingToShoot = false;
-        this.weapon.shoot = true;
-    },
+        console.log('selectWeapon', weapon);
 
-    shoot: function () {
+        this.removeComponent(this.selectedWeapon);
 
-        if (this.flicker) return;
+        this.addComponent(weapon);
 
-        var bullet = Crafty.e(this.weapon.bullet);
-
-        bullet.attr({
-            ownerId: this._playerId,
-            x: this.x,
-            y: this.y,
-            rotation: this.rotation,
-            xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
-            yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
-        });
-
-        if (this.playerType == 'mine') {
-            Crafty.audio.stop(this.audioFiles.SHOOT(this));
-            Crafty.audio.play(this.audioFiles.SHOOT(this), 1, 0.1);
-        }
-
-        if (this.weapon.heat.current < this.weapon.heat.max)
-            this.weapon.heat.current += this.weapon.heat.heatPerShoot;
-
-        if (this.weapon.heat.current >= this.weapon.heat.max) {
-            this.weapon.heat.overheated = true;
-            if (this.playerType == 'mine') {
-                Crafty.trigger("ShowText", "Weapon Overheated!");
-            }
-        }
+        this.selectedWeapon = weapon;
     },
 
     audioFiles: {
@@ -425,8 +320,6 @@ Crafty.c("StatusBar", {
         this.attach(bar.upBlock);
         this.attach(bar.downBlock);
 
-        console.log("initHealthBar called: " + barType, bar);
-
         return this;
     },
 
@@ -454,8 +347,6 @@ Crafty.c("StatusBar", {
         } else {
             bar.upBlock.color('orange')
         }
-
-        console.log("updated bar: " + barType, bar);
 
         return this;
     }

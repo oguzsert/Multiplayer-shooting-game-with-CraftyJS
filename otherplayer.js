@@ -18,7 +18,7 @@ Crafty.c("OtherPlayer", {
                     that.rotation = data.rotation;
                     that.engine.move = data.movement;
                     that.engine.rotate = data.engine.rotate;
-                    that.engine.isShooting = data.shoot;
+                    //that.engine.isShooting = data.shoot;
                 }
 
             });

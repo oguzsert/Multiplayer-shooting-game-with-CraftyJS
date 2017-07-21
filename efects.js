@@ -49,3 +49,4 @@ Crafty.c("Flicker", {
     }
 
 });
+
