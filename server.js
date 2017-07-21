@@ -3,10 +3,17 @@ var io = require('socket.io')(server);
 var extend = require('util')._extend;
 
 var clients = [];
-var score = {};
+
+var points = {
+	hurt: 1,
+	kill: 10,
+	dead: 0
+}
 
 io.on('connection', function (socket) {
+
 	console.log('new connection:', socket.id);
+
 	
 	
 	
@@ -38,18 +45,23 @@ io.on('connection', function (socket) {
 						
 	}
 
-	
-	
+
 	socket.on("createPlayerOnServer", function (data) {
 		console.log("createPlayerOnServer", data);
-		clients.push({ clientid: socket.id, player: data });		
-		score[data.playerid]  = {
-				name:data.nick,
-				kill:0,
-				dead:0,
-				points:0
+
+
+		var newClient = { clientid: socket.id, player: data }
+
+		newClient.player.score = {
+			kill: 0,
+			dead: 0,
+			points: 0
 		};
-		io.sockets.emit('scoreboard-update', score);
+
+		clients.push(newClient);
+
+		io.sockets.emit('scoreboard-update', clients);
+
 		socket.broadcast.emit("newPlayerJoined", data);
 	});
 
@@ -57,6 +69,7 @@ io.on('connection', function (socket) {
 		socket.emit("currentPlayerList", clients.map(function (c) {
 			return c.player;
 		}));
+		io.sockets.emit('scoreboard-update', clients);
 	});
 
 	socket.on("ineedcorrections", function () {
@@ -95,19 +108,22 @@ io.on('connection', function (socket) {
 
 	socket.on("hurt", function (data) {
 		console.log("hurt", data);
-		updatePlayerScore(data.hitterId,"points",1);
 		socket.broadcast.emit("player-hurt", data);
-		io.sockets.emit('scoreboard-update', score);
-		
+
+		if (updatePlayerScore(data.hitterId, "points", points.hurt)) {
+			io.sockets.emit('scoreboard-update', clients);
+		}
 	});
 
 	socket.on("die", function (data) {
 		console.log("die", data);
-		updatePlayerScore(data.hitterId,"points",10);
-		updatePlayerScore(data.hitterId,"kill",1);
-		updatePlayerScore(data.playerId,"dead",1);
-		io.sockets.emit('scoreboard-update', score);
 		socket.broadcast.emit("player-die", data);
+
+		updatePlayerScore(data.hitterId, "points", points.kill);
+		updatePlayerScore(data.hitterId, "kill", 1);
+		if (updatePlayerScore(data.playerId, "dead", 1)) {
+			io.sockets.emit('scoreboard-update', clients);
+		}
 	});
 
 	socket.on("respawn", function (data) {
@@ -133,21 +149,83 @@ io.on('connection', function (socket) {
 	socket.on("disconnect", function () {
 		console.log("client disconnected", socket.id);
 
+		var c = removeClient(socket.id);
+
+		io.sockets.emit('scoreboard-update', clients);
+	});
+
+	function updatePlayerScore(playerId, parameter, value) {
+
+		var targetPlayer = getPlayerById(playerId);
+
+		if (!targetPlayer) return false;
+
+		if (!targetPlayer.score) {
+			targetPlayer.score = {
+				kill: 0,
+				dead: 0,
+				points: 0
+			};
+		}
+
+		targetPlayer.score[parameter] += value;
+
+		return true;
+	}
+
+	function getPlayerBySocketId(socketId) {
 		var clientIndex = -1;
 		for (var index = 0; index < clients.length; index++) {
 			var c = clients[index];
-			if (c.clientid == socket.id) {
-				clientIndex = index;
-				break;
+			if (c.clientid == socketId) {
+				return c.player;
 			}
 		}
+		return null;
+	}
+
+	function getPlayerById(playerId) {
+		var clientIndex = -1;
+		for (var index = 0; index < clients.length; index++) {
+			var c = clients[index];
+			if (c.player.playerid == playerId) {
+				return c.player;
+			}
+		}
+		return null;
+	}
+
+	function getClientIndex(socketId) {
+		var clientIndex = -1;
+		for (var index = 0; index < clients.length; index++) {
+			var c = clients[index];
+			if (c.clientid == socketId) {
+				return index;
+			}
+		}
+		return -1;
+	}
+
+	function removeClient(clientId) {
+		var clientIndex = getClientIndex(clientId);
 
 		if (clientIndex >= 0) {
-			console.log("client player removed")
-			clients.splice(clientIndex, 1);
-		}
-	});
+			
+			var player = getPlayerBySocketId(clientId);
 
+			if (player) {
+				console.log("player-left", player);
+				io.sockets.emit('playerLeft', player);
+			}
+
+			console.log("client removed")
+			clients.splice(clientIndex, 1);
+
+			return clients[clientIndex]
+		}
+
+		return null;
+	}
 });
 
 server.listen(3000);

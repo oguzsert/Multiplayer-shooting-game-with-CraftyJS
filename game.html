@@ -6,6 +6,7 @@
 	</script>
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
 	 crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./sprites.js"></script>
 	<script type="text/javascript" src="./efects.js"></script>
@@ -15,21 +16,7 @@
 	<script type="text/javascript" src="./weapons.js"></script>
 	<script type="text/javascript" src="./socket.io.js"></script>
 </head>
-<style>
 
-#scoreboard-container{
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 9999999999;
-    width: 1024px;
-    height: 768px;
-    background-color: rgba(0,0,0,0.7);
-}
-#scoreboard-container #scoreboard-table{
-	color:#fff !important;
-}
-</style>
 
 <body style="font-family:tahoma;">
 	<div id="login">
@@ -51,36 +38,20 @@
 			<option value="http://192.168.6.217:3000">baris</option>
 			<option value="http://127.0.0.1:3000">uzaklar</option>
 		</select>
-		<input type="button" onclick="joinGame()" id="createbutton" value="Oyuncu Oluştur">
+		<input type="button" onclick="joinGame()" id="createbutton" value="join">
 		<br /><br />
 	</div>
-	<div id="game" style="border:3px dotted #000;display:none"></div>
-	<div id="scoreboard-container" style="display:none;">
-	<table  id="scoreboard-table">
-		<thead>
-			<tr>
-				<th>
-					PLAYER
-				</th>
-				<th>
-					KILL
-				</th>				
-				<th>
-					DEAD
-				</th>				
-				<th>
-					POINT
-				</th>
-			</tr>
-		</thead>
-		
-			<tbody id="scoreboard">
-			<tbody>
-		
-	</table>
+
+
+	<div id="game" style="display:none">
+		<div id="board" style="float:left; border:3px dotted #000;"></div>
+		<div id="score" style="margin-left: 20px;float:left;"></div>
 	</div>
+
+
 	<script>
 		var socket = null;
+
 		var myplayer = null;
 
 		var boardWidth = 1024;
@@ -100,7 +71,7 @@
 		}
 
 
-		Crafty.init(boardWidth, boardHeight, document.getElementById('game'));
+		Crafty.init(boardWidth, boardHeight, document.getElementById('board'));
 
 		function joinGame() {
 			if (myplayer !== null) {
@@ -135,7 +106,7 @@
 				.setName(nick)
 				.showName()
 				.addWeapon('rifle')
-				.initHealthBar(64, 'red')
+				.initHealthBar(48, 'red')
 				.bindSocket(socket)
 				.reset();
 
@@ -145,7 +116,7 @@
 				color: color,
 			});
 
- 			return myplayer;
+			return myplayer;
 		}
 
 		function createOtherPlayer(id, nick, color, isPristine) {
@@ -156,7 +127,7 @@
 				.setName(nick)
 				.showName()
 				.addWeapon('rifle')
-				.initHealthBar(32, 'red')
+				.initHealthBar(48, 'red')
 				.bindSocket(socket);
 
 			if (!isPristine) {
@@ -192,20 +163,39 @@
 				createOtherPlayer(newPlayerInfo.playerid, newPlayerInfo.nick, newPlayerInfo.color, true);
 			});
 
+			socket.on("playerLeft", function (playerInfo) {
+				console.log("playerLeft", playerInfo);
+
+				var players = Crafty('OtherPlayer').get();
+
+				for (var index = 0; index < players.length; index++) {
+					var player = players[index];
+					console.log(player);
+					if (player._playerId == playerInfo.playerid) {
+						console.log("player destoyed");
+						player.destroy();
+					}
+
+				}
+				console.log('otherplayers', Crafty('OtherPlayer'))
+			});
+
 			socket.on("currentPlayerList", function (playerList) {
 				playerList.forEach(function (player) {
 					createOtherPlayer(player.playerid, player.nick, player.color, false);
 				});
 				socket.emit("ineedcorrections");
 			});
-			
-			socket.on("scoreboard-update",function(scoreboardData){
-				createScoreBoard(scoreboardData);
-			});
+
+
+			socket.on("scoreboard-update", function (clients) {
+				renderScoreBoard(clients);
+			})
+
 
 			socket.emit("getPlayers");
-			
-			 Crafty.e("2D, Canvas, terrain");	
+
+			Crafty.e("2D, Canvas, terrain").attr({ z: -1000 });
 
 			return socket;
 		}
@@ -220,6 +210,26 @@
 			
 		}
 
+		function renderScoreBoard(clients) {
+
+			console.log("scores", clients);
+
+			var html = '<table><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
+			for (var index = 0; index < clients.length; ++index) {
+				var client = clients[index];
+				if (client && client.player.score) {
+					html += '<tr>'
+					html += '<td>' + client.player.nick + '</td>';
+					html += '<td>' + client.player.score.kill + '</td>';
+					html += '<td>' + client.player.score.dead + '</td>';
+					html += '<td>' + client.player.score.points + '</td>';
+					html += '</tr>'
+				}
+			}
+			html += '</tbody></table>';
+
+			$('#score').html(html);
+		}
 	</script>
 
 </body>
