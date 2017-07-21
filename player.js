@@ -61,12 +61,13 @@ Crafty.c("Player", {
                 }
             }
 
+            var rotationspeed = this.engine.move == 'none' ? 1 : 5;
             if (this.engine.rotate == 'right') {
-                this.rotation += 5;
+                this.rotation +=  rotationspeed;
             }
 
             if (this.engine.rotate == 'left') {
-                this.rotation -= 5;
+                this.rotation -= rotationspeed;;
             }
 
             if (this.engine.move == 'forward') {
