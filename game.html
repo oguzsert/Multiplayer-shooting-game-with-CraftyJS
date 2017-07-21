@@ -125,9 +125,9 @@
 
 			socket = connectServer(serverIp);
 
-			createMyPlayer(playerNick, playerColor);
-
 			socket.emit("getPlayers");
+
+			createMyPlayer(playerNick, playerColor);
 
 			$('#login').hide();
 			$('#game').show();
