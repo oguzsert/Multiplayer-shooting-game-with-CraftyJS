@@ -154,7 +154,7 @@ Crafty.c("Player", {
         });
 
         this.isActive = false;
-        this.z = -1;
+        
         this.x = 1000000;
         this.y = 1000000;
 

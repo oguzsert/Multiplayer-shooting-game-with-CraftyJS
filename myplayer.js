@@ -45,6 +45,7 @@ Crafty.c("MyPlayer", {
                 } else if (e.key == Crafty.keys.X) {
                     this.shoot3();
                 }
+				
             })
             .bind('KeyUp', function (e) {
 

@@ -15,11 +15,36 @@
 	<script type="text/javascript" src="./weapons.js"></script>
 	<script type="text/javascript" src="./socket.io.js"></script>
 </head>
+<style>
+
+#scoreboard-container{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999999999;
+    width: 1024px;
+    height: 768px;
+    background-color: rgba(0,0,0,0.7);
+}
+#scoreboard-container #scoreboard-table{
+	color:#fff !important;
+}
+</style>
 
 <body style="font-family:tahoma;">
 	<div id="login">
-		<input type="text" placeholder="nick" id="nick" value="Keke">
-		<input type="text" placeholder="renk" id="renk" value="red">
+		<input type="text" placeholder="nick" id="nick" value="" placeholder="Nick Giriniz">
+		<select id="renk">
+			<option value="blue">Mavi</option>
+			<option value="brown">Kahverengi</option>
+			<option value="gray">Gri</option>
+			<option value="green">Yeşil</option>
+			<option value="orange">Turuncu</option>
+			<option value="pink">Pembe</option>
+			<option value="purple">Mor</option>
+			<option value="red">Kırmızı</option>
+			<option value="yellow">Sarı</option>
+		</select>
 		<select id="server">
 			<option value="http://127.0.0.1:3000">local</option>
 			<option value="http://192.168.6.80:3000">oguz</option>
@@ -30,13 +55,50 @@
 		<br /><br />
 	</div>
 	<div id="game" style="border:3px dotted #000;display:none"></div>
-
+	<div id="scoreboard-container" style="display:none;">
+	<table  id="scoreboard-table">
+		<thead>
+			<tr>
+				<th>
+					PLAYER
+				</th>
+				<th>
+					KILL
+				</th>				
+				<th>
+					DEAD
+				</th>				
+				<th>
+					POINT
+				</th>
+			</tr>
+		</thead>
+		
+			<tbody id="scoreboard">
+			<tbody>
+		
+	</table>
+	</div>
 	<script>
 		var socket = null;
 		var myplayer = null;
 
 		var boardWidth = 1024;
 		var boardHeight = 768;
+		
+		
+		document.body.onkeydown = function(e){
+			if(e.keyCode == 9){
+				$("#scoreboard-container").css("display","block");
+			}
+		}
+		
+		document.body.onkeyup = function(e){
+			if(e.keyCode == 9){
+				$("#scoreboard-container").css("display","none");
+			}
+		}
+
 
 		Crafty.init(boardWidth, boardHeight, document.getElementById('game'));
 
@@ -44,13 +106,20 @@
 			if (myplayer !== null) {
 				return false;
 			}
+			
+			var playerNick = document.getElementById("nick").value;
+			
+			if(playerNick.length == 0){
+				alert("Nick Giriniz");
+				return;
+			}
+			
 
 			var serverIp = $('#server option:selected').val();
-
+			var playerColor = $('#renk option:selected').val();
 			socket = connectServer(serverIp);
 
-			var playerColor = document.getElementById("renk").value;
-			var playerNick = document.getElementById("nick").value;
+			
 
 			createMyPlayer(playerNick, playerColor);
 
@@ -131,14 +200,24 @@
 			});
 			
 			socket.on("scoreboard-update",function(scoreboardData){
-				console.warn(scoreboardData);
-			})
+				createScoreBoard(scoreboardData);
+			});
 
 			socket.emit("getPlayers");
 			
 			 Crafty.e("2D, Canvas, terrain");	
 
 			return socket;
+		}
+		
+		function createScoreBoard(dataObject){
+			$("#scoreboard-table").css("display","block");
+			$("#scoreboard").html("");
+			Object.keys(dataObject).forEach(function(id){
+				var playerData = dataObject[id];				
+				$("#scoreboard").append("<tr><td>"+playerData.name+"</td>"+"<td>"+playerData.kill+"</td>"+"<td>"+playerData.dead+"</td>"+"<td>"+playerData.points+"</td></tr>");
+			});
+			
 		}
 
 	</script>

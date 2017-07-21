@@ -28,6 +28,9 @@ Crafty.sprite(32,24,game_path + "asset/img/pinktank.png",{
     pinktank:[0,0]
 });
 
+Crafty.sprite(32,24,game_path + "asset/img/greentank.png",{
+    greentank:[0,0]
+});
 
 Crafty.sprite(32,24,game_path + "asset/img/purpletank.png",{
     purpletank:[0,0]

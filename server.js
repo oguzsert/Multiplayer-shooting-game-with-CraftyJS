@@ -19,9 +19,11 @@ io.on('connection', function (socket) {
 			}		
 		});
 		
-		console.log(targetPlayer,"COMOLOKKO",clients);
+		if(!targetPlayer.player){
+			return;
+		}
 		
-		if(!score[targetPlayer.playerid]){
+		if(!score[targetPlayer.player.playerid]){
 			score[playerId]  = {
 				name:targetPlayer.player.nick,
 				kill:0,
@@ -40,7 +42,14 @@ io.on('connection', function (socket) {
 	
 	socket.on("createPlayerOnServer", function (data) {
 		console.log("createPlayerOnServer", data);
-		clients.push({ clientid: socket.id, player: data });
+		clients.push({ clientid: socket.id, player: data });		
+		score[data.playerid]  = {
+				name:data.nick,
+				kill:0,
+				dead:0,
+				points:0
+		};
+		io.sockets.emit('scoreboard-update', score);
 		socket.broadcast.emit("newPlayerJoined", data);
 	});
 
