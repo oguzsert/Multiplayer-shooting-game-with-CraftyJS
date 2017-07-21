@@ -136,8 +136,7 @@
 				.setColor(color)
 				.setName(nick)
 				.showName()
-				.addWeapon('rifle')
-				.initHealthBar(48, 'red')
+				.initBar('healthBar', 48)
 				.bindSocket(socket)
 				.reset();
 
@@ -157,8 +156,7 @@
 				.setColor(color)
 				.setName(nick)
 				.showName()
-				.addWeapon('rifle')
-				.initHealthBar(48, 'red')
+				.initBar('healthBar', 48)
 				.bindSocket(socket);
 
 			if (!isPristine) {

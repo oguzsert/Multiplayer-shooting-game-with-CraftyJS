@@ -5,7 +5,7 @@ Crafty.c("Player", {
     },
 
     init: function () {
-        this.addComponent("2D, Canvas, Collision, Flicker, HealthBar");
+        this.addComponent("2D, Canvas, Collision, Flicker, StatusBar");
 
         this.playerType = "none";
         this._playerId = new Date().getTime();
@@ -17,6 +17,7 @@ Crafty.c("Player", {
         this.z = 10;
         this.rotation = 0;
         this.isShooting = false;
+
         this.origin('center');
 
         var colour = "";
@@ -36,18 +37,35 @@ Crafty.c("Player", {
             return this;
         }
 
+        // this.weapon = {
+        //     bullet: "BasicBullet",
+        //     bulletspeed: 20,
+        //     firerate: 5,
+        //     heat: {
+        //         overheated: false,
+        //         current: 0,
+        //         max: 100,
+        //         heatPerShoot: 4
+        //     }
+        // };
+
         this.weapon = {
             bullet: "BasicBullet",
             bulletspeed: 20,
-            bulletcolor: "orange",
             firerate: 5,
             heat: {
                 overheated: false,
                 current: 0,
                 max: 100,
                 heatPerShoot: 4
-            }
-        };
+            },
+
+            isLoadingToShoot: false,
+            maxPower: 100,
+            power: 0,
+            shootPowerRateLimit: 25,
+            shoot: false
+        }
 
         Crafty.audio.add(this.audioFiles.ENGINE_IDLE(this), "asset/sound/engine/090913-009.mp3");
         Crafty.audio.add(this.audioFiles.ENGINE(this), "asset/sound/engine/090913-002.mp3");
@@ -60,11 +78,32 @@ Crafty.c("Player", {
             return newX >= 0 && newX <= Crafty.viewport.width && newY >= 0 && newY <= Crafty.viewport.height
         };
 
+
+
         this.bind("EnterFrame", function (frame) {
+
+            // if (this.weapon.isLoadingToShoot) {
+            //     console.log('this.weapon.isLoadingToShoot', this.weapon.isLoadingToShoot);
+            //     this.weapon.power += 1;
+            //     if (this.weapon.power > this.weapon.maxPower) this.weapon.power = this.weapon.maxPower;
+            // }
+
+            // var powerRate = this.weapon.power / this.weapon.maxPower;
+
+            // if (this.weapon.shoot && powerRate > this.weapon.shootPowerRateLimit) {
+            //     console.log('shoot', this.weapon.power);
+            //     this.weapon.bulletspeed = 100 * powerRate ;
+            //     this.shoot();
+            //     this.weapon.power = 0;
+            //     this.weapon.shoot = false;
+            // } else {
+            //     this.weapon.shoot = false;
+            // }
 
             if (frame.frame % this.weapon.firerate == 0) {
                 if (this.isShooting && !this.weapon.heat.overheated) {
                     this.shoot();
+
                 } else {
                     if (this.weapon.heat.current > 0)
                         this.weapon.heat.current -= this.weapon.heat.heatPerShoot;
@@ -76,6 +115,8 @@ Crafty.c("Player", {
                         Crafty.trigger("HideText");
                     }
                 }
+
+                this.updateBar('shootBar', this.weapon.heat.max - this.weapon.heat.current)
             }
 
             var rotationspeed = this.engine.move == 'none' ? 2 : 5;
@@ -124,7 +165,7 @@ Crafty.c("Player", {
 
                 this.hp.current -= data.dmg;
 
-                this.updateHealthBar(this.hp.current / this.hp.max * 100);
+                this.updateBar('healthBar', this.hp.current / this.hp.max * 100);
 
                 if (this.playerType == "mine") {
                     this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.dmg, hitterId: data.hitterId });
@@ -138,6 +179,8 @@ Crafty.c("Player", {
                 }
             });
 
+        this.initBar('shootBar', 56);
+
         Crafty.audio.play(this.audioFiles.ENGINE_IDLE(this), -1, 0.2);
     },
 
@@ -150,7 +193,7 @@ Crafty.c("Player", {
 
         this.hp = { current: 10, max: 10 };
 
-        this.updateHealthBar(100);
+        this.updateBar('healthBar', 100);
 
         var that = this;
 
@@ -263,10 +306,13 @@ Crafty.c("Player", {
 
     startShoot: function (shooter) {
         this.isShooting = true;
+        this.weapon.isLoadingToShoot = true;
     },
 
     stopShoot: function () {
         this.isShooting = false;
+        this.weapon.isLoadingToShoot = false;
+        this.weapon.shoot = true;
     },
 
     shoot: function () {
@@ -310,62 +356,106 @@ Crafty.c("Player", {
     },
 });
 
-Crafty.c("HealthBar", {
+Crafty.c("StatusBar", {
+
     init: function () {
         this.requires("2D");
 
-        this._pbMaxValue = 100;
-        this._pbFilledFraction = 1;
-        this._pbHeight = 3;
-        this._pbY = 38;
+        this.healthBar = {
+            currentValue: 100,
+            maxValue: 100,
+            filledFraction: 1,
+
+            width: 30,
+            height: 3,
+
+            blockWidth: 30,
+
+            upBlock: null,
+            downBlock: null,
+
+            marginY: 16
+        };
+
+        this.shootBar = {
+            currentValue: 100,
+            maxValue: 100,
+            filledFraction: 1,
+
+            width: 30,
+            height: 3,
+
+            blockWidth: 30,
+
+            upBlock: null,
+            downBlock: null,
+
+            marginY: 22
+        };
     },
 
-    initHealthBar: function (totalWidth, filledColor) {
+    initBar: function (barType, totalWidth) {
 
-        this._pbTotalWidth = totalWidth;
+        var bar = this[barType];
 
-        this._pbBlockWidth = this._pbTotalWidth * this._pbFilledFraction;
+        if (!bar) return;
 
-        this._pbLowerBlock = Crafty.e("2D, Canvas, Color").color('green').attr({
+        bar.width = totalWidth;
+
+        bar.blockWidth = bar.width * bar.filledFraction;
+
+        bar.upBlock = Crafty.e("2D, Canvas, Color").color('green').attr({
+            w: bar.blockWidth,
+            h: bar.height,
+
             x: this._x,
-            y: this._y + this._pbY,
-            w: this._pbBlockWidth,
-            h: this._pbHeight,
+            y: this._y + this.h + bar.marginY,
             z: 10000
         });
 
-        this._pbHigherBlock = Crafty.e("2D, Canvas, Color").color(filledColor == 'gray' ? 'black' : 'gray').attr({
+        bar.downBlock = Crafty.e("2D, Canvas, Color").color('gray').attr({
+            w: bar.width,
+            h: bar.height,
+
             x: this._x,
-            y: this._y + this._pbY,
-            w: this._pbBlockWidth,
-            h: this._pbHeight,
-            z: 100
+            y: this._y + this.h + bar.marginY,
+            z: 1000
         });;
 
-        this.attach(this._pbLowerBlock);
-        this.attach(this._pbHigherBlock);
+        this.attach(bar.upBlock);
+        this.attach(bar.downBlock);
+
+        console.log("initHealthBar called: " + barType, bar);
 
         return this;
     },
 
-    updateHealthBar: function (val) {
+    updateBar: function (barType, val) {
 
-        this._pbFilledFraction = val / this._pbMaxValue;
+        var bar = this[barType];
 
-        this._pbBlockWidth = this._pbTotalWidth * this._pbFilledFraction;
+        if (!bar) return;
 
-        this._pbLowerBlock.attr({
-            w: this._pbBlockWidth,
+        bar.currentValue = val;
+
+        bar.filledFraction = bar.currentValue / bar.maxValue;
+
+        bar.blockWidth = bar.width * bar.filledFraction;
+
+        bar.upBlock.attr({
+            w: bar.blockWidth,
             z: 10000
         });
 
-        if (this._pbFilledFraction >= 0.8 && this._pbFilledFraction <= 1)
-            this._pbLowerBlock.color('green')
-        else if (this._pbFilledFraction <= 0.2) {
-            this._pbLowerBlock.color('red')
+        if (bar.filledFraction >= 0.8 && bar.filledFraction <= 1)
+            bar.upBlock.color('green')
+        else if (bar.filledFraction <= 0.2) {
+            bar.upBlock.color('red')
         } else {
-            this._pbLowerBlock.color('orange')
+            bar.upBlock.color('orange')
         }
+
+        console.log("updated bar: " + barType, bar);
 
         return this;
     }
