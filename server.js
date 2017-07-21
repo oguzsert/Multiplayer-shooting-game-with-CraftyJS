@@ -14,38 +14,6 @@ io.on('connection', function (socket) {
 
 	console.log('new connection:', socket.id);
 
-	
-	
-	
-	function updatePlayerScore(playerId,parameter,value){		
-		var targetPlayer = {};
-				
-		clients.forEach(function(client){
-			if(playerId == client.player.playerid){
-				targetPlayer = client
-			}		
-		});
-		
-		if(!targetPlayer.player){
-			return;
-		}
-		
-		if(!score[targetPlayer.player.playerid]){
-			score[playerId]  = {
-				name:targetPlayer.player.nick,
-				kill:0,
-				dead:0,
-				points:0
-			}
-		}
-		
-		score[playerId][parameter] = score[playerId][parameter] + value;
-		
-		
-						
-	}
-
-
 	socket.on("createPlayerOnServer", function (data) {
 		console.log("createPlayerOnServer", data);
 

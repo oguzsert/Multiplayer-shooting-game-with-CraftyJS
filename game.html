@@ -90,18 +90,15 @@
 			}
 			
 			var playerNick = document.getElementById("nick").value;
-			
+			var playerColor = $('#renk option:selected').val();
+			var serverIp = $('#server option:selected').val();
+
 			if(playerNick.length == 0){
 				alert("Nick Giriniz");
 				return;
 			}
-			
 
-			var serverIp = $('#server option:selected').val();
-			var playerColor = $('#renk option:selected').val();
 			socket = connectServer(serverIp);
-
-			
 
 			createMyPlayer(playerNick, playerColor);
 
@@ -181,14 +178,11 @@
 
 				for (var index = 0; index < players.length; index++) {
 					var player = players[index];
-					console.log(player);
 					if (player._playerId == playerInfo.playerid) {
 						console.log("player destoyed");
 						player.destroy();
 					}
-
 				}
-				console.log('otherplayers', Crafty('OtherPlayer'))
 			});
 
 			socket.on("currentPlayerList", function (playerList) {
@@ -197,7 +191,6 @@
 				});
 				socket.emit("ineedcorrections");
 			});
-
 
 			socket.on("scoreboard-update", function (clients) {
 				renderScoreBoard(clients);
@@ -210,12 +203,8 @@
 
 			return socket;
 		}
-		
-		
 
 		function renderScoreBoard(clients) {
-
-			console.log("scores", clients);
 			
 			clients.sort(function(a,b) {
 					return b.player.score.points - a.player.score.points;
