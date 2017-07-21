@@ -273,44 +273,6 @@ Crafty.c("Player", {
         }
     },
 
-    shoot3: function () {
-
-        Crafty.e("BigBullet").color(this.color())
-            .attr({
-                ownerId: this._playerId,
-                x: this.x,
-                y: this.y,
-                rotation: this.rotation,
-                xspeed: this.weapon.bulletspeed * Math.cos(this.rotation * Math.PI / 180),
-                yspeed: this.weapon.bulletspeed * Math.sin(this.rotation * Math.PI / 180)
-            });
-
-        Crafty.e("BigBullet").color(this.color())
-            .attr({
-                ownerId: this._playerId,
-                x: this.x + 10,
-                y: this.y,
-                rotation: this.rotation + 45,
-                xspeed: this.weapon.bulletspeed * Math.cos((this.rotation + 45) * Math.PI / 180),
-                yspeed: this.weapon.bulletspeed * Math.sin((this.rotation + 45) * Math.PI / 180)
-            });
-
-        Crafty.e("BigBullet").color(this.color())
-            .attr({
-                ownerId: this._playerId,
-                x: this.x + 50,
-                y: this.y,
-                rotation: this.rotation - 45,
-                xspeed: this.weapon.bulletspeed * Math.cos((this.rotation - 45) * Math.PI / 180),
-                yspeed: this.weapon.bulletspeed * Math.sin((this.rotation - 45) * Math.PI / 180)
-            });
-
-        if (this.playerType == 'mine') {
-            Crafty.audio.stop(this.audioFiles.SHOOT3(this));
-            Crafty.audio.play(this.audioFiles.SHOOT3(this));
-        }
-    },
-
     audioFiles: {
         ENGINE: function (that) { return "engine_" + that._sessionId; },
         ENGINE_IDLE: function (that) { return "engine-idle_" + that._sessionId; },
