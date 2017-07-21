@@ -17,6 +17,17 @@
 	<script type="text/javascript" src="./socket.io.js"></script>
 </head>
 
+<style>
+	#score{
+		margin-left: 1px;
+		position: absolute;
+		z-index: 9999999;
+		width: 1028px;
+		height: 774px;
+		background-color: rgba(0,0,0,0.7);
+		display:none;
+	}
+</style>
 
 <body style="font-family:tahoma;">
 	<div id="login">
@@ -45,7 +56,7 @@
 
 	<div id="game" style="display:none">
 		<div id="board" style="float:left; border:3px dotted #000;"></div>
-		<div id="score" style="margin-left: 20px;float:left;"></div>
+		<div id="score" ></div>
 	</div>
 
 
@@ -60,13 +71,13 @@
 		
 		document.body.onkeydown = function(e){
 			if(e.keyCode == 9){
-				$("#scoreboard-container").css("display","block");
+				$("#score").css("display","block");
 			}
 		}
 		
 		document.body.onkeyup = function(e){
 			if(e.keyCode == 9){
-				$("#scoreboard-container").css("display","none");
+				$("#score").css("display","none");
 			}
 		}
 
@@ -214,7 +225,7 @@
 
 			console.log("scores", clients);
 
-			var html = '<table><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
+			var html = '<table style="color:white;"><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
 			for (var index = 0; index < clients.length; ++index) {
 				var client = clients[index];
 				if (client && client.player.score) {
