@@ -18,6 +18,7 @@ Crafty.c("Player", {
         this.rotation = 0;
         this.isShooting = false;
         this.origin('center');
+
         var colour = "";
         this.color = function () {
             return colour;
@@ -39,7 +40,13 @@ Crafty.c("Player", {
             bullet: "BasicBullet",
             bulletspeed: 20,
             bulletcolor: "orange",
-            firerate: 10,
+            firerate: 5,
+            heat: {
+                overheated: false,
+                current: 0,
+                max: 100,
+                heatPerShoot: 4
+            }
         };
 
         Crafty.audio.add(this.audioFiles.ENGINE_IDLE(this), "asset/sound/engine/090913-009.mp3");
@@ -55,15 +62,23 @@ Crafty.c("Player", {
 
         this.bind("EnterFrame", function (frame) {
 
-            if (frame.frame % 5 == 0) {
-                if (this.isShooting) {
+            if (frame.frame % this.weapon.firerate == 0) {
+                if (this.isShooting && !this.weapon.heat.overheated) {
                     this.shoot();
+                } else {
+                    if (this.weapon.heat.current > 0)
+                        this.weapon.heat.current -= this.weapon.heat.heatPerShoot;
+                }
+
+                if (this.weapon.heat.overheated && this.weapon.heat.current < 25) {
+                    this.weapon.heat.overheated = false;
+                    Crafty.trigger("HideText");
                 }
             }
 
             var rotationspeed = this.engine.move == 'none' ? 1 : 5;
             if (this.engine.rotate == 'right') {
-                this.rotation +=  rotationspeed;
+                this.rotation += rotationspeed;
             }
 
             if (this.engine.rotate == 'left') {
@@ -151,7 +166,7 @@ Crafty.c("Player", {
         });
 
         this.isActive = false;
-        
+
         this.x = 1000000;
         this.y = 1000000;
 
@@ -254,8 +269,8 @@ Crafty.c("Player", {
     },
 
     shoot: function () {
-        
-        if(this.flicker) return;
+
+        if (this.flicker) return;
 
         var bullet = Crafty.e(this.weapon.bullet);
 
@@ -271,6 +286,14 @@ Crafty.c("Player", {
         if (this.playerType == 'mine') {
             Crafty.audio.stop(this.audioFiles.SHOOT(this));
             Crafty.audio.play(this.audioFiles.SHOOT(this), 1, 0.1);
+        }
+
+        if (this.weapon.heat.current < this.weapon.heat.max)
+            this.weapon.heat.current += this.weapon.heat.heatPerShoot;
+
+        if (this.weapon.heat.current >= this.weapon.heat.max) {
+            Crafty.trigger("ShowText", "Weapon Overheated!");
+            this.weapon.heat.overheated = true;
         }
     },
 

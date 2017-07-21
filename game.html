@@ -4,8 +4,8 @@
 	<script>
 		var game_path = location.href.lastIndexOf("/") !== -1 ? location.href.substring(0, location.href.lastIndexOf("/") + 1) : location.href;
 	</script>
-	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-	 crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
 	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
 	<script type="text/javascript" src="./sprites.js"></script>
@@ -18,14 +18,23 @@
 </head>
 
 <style>
-	#score{
+	#score {
 		margin-left: 1px;
 		position: absolute;
 		z-index: 9999999;
 		width: 1028px;
 		height: 774px;
-		background-color: rgba(0,0,0,0.7);
-		display:none;
+		background-color: rgba(0, 0, 0, 0.7);
+		display: none;
+	}
+
+	.alert {
+		font-size: 30px;
+		color: red;
+		width: 100%;
+		line-height: 480px;
+		display: none;
+		text-align: center;
 	}
 </style>
 
@@ -56,7 +65,8 @@
 
 	<div id="game" style="display:none">
 		<div id="board" style="float:left; border:3px dotted #000;"></div>
-		<div id="score" ></div>
+		<div id="score"></div>
+		<div class="alert"></div>
 	</div>
 
 
@@ -67,33 +77,44 @@
 
 		var boardWidth = 1024;
 		var boardHeight = 768;
-		
-		
-		document.body.onkeydown = function(e){
-			if(e.keyCode == 9){
-				$("#score").css("display","block");
+
+
+		document.body.onkeydown = function (e) {
+			if (e.keyCode == 9) {
+				$("#score").css("display", "block");
 			}
 		}
-		
-		document.body.onkeyup = function(e){
-			if(e.keyCode == 9){
-				$("#score").css("display","none");
+
+		document.body.onkeyup = function (e) {
+			if (e.keyCode == 9) {
+				$("#score").css("display", "none");
 			}
 		}
 
 
 		Crafty.init(boardWidth, boardHeight, document.getElementById('board'));
 
+		var infos = {
+			alert: $('.alert')
+		}
+
+		Crafty.bind("ShowText", function (text) {
+			infos.alert.text(text).show().effect('pulsate', 500)
+		});
+		Crafty.bind("HideText", function () {
+			infos.alert.text("").hide();
+		});
+
 		function joinGame() {
 			if (myplayer !== null) {
 				return false;
 			}
-			
+
 			var playerNick = document.getElementById("nick").value;
 			var playerColor = $('#renk option:selected').val();
 			var serverIp = $('#server option:selected').val();
 
-			if(playerNick.length == 0){
+			if (playerNick.length == 0) {
 				alert("Nick Giriniz");
 				return;
 			}
@@ -205,9 +226,9 @@
 		}
 
 		function renderScoreBoard(clients) {
-			
-			clients.sort(function(a,b) {
-					return b.player.score.points - a.player.score.points;
+
+			clients.sort(function (a, b) {
+				return b.player.score.points - a.player.score.points;
 			});
 
 			var html = '<table style="color:white;"><thead><tr><th>Name</th><th>Kill</th><th>Dead</th><th>Point</th></tr></thead><tbody>';
