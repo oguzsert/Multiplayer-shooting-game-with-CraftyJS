@@ -38,11 +38,7 @@ io.on('connection', function (socket) {
 			return c.player;
 		}));
 		io.sockets.emit('scoreboard-update', clients);
-	});
-
-	socket.on("ineedcorrections", function () {
-		socket.broadcast.emit("sendCorrections");
-	});
+	});	
 
 	socket.on("move-forward", function (data) {
 		console.log("move-forward", data);
@@ -109,6 +105,10 @@ io.on('connection', function (socket) {
 		socket.broadcast.emit("player-stop-shoot", data);
 	});
 
+	socket.on("ineedcorrections", function () {
+		socket.broadcast.emit("sendCorrections");
+	});
+	
 	socket.on("correction", function (data) {
 		console.log("correction", data);
 		socket.broadcast.emit("player-correction", data);

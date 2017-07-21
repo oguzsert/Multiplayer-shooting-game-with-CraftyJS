@@ -25,13 +25,13 @@ Crafty.c("OtherPlayer", {
 
             socket.on("player-respawn", function (playerInfo) {
                 if (playerInfo.playerId == that._playerId) {
-                    that.respawn({x: playerInfo.x, y: playerInfo.y, rotaion: playerInfo.rotation});
+                    that.respawn({ x: playerInfo.x, y: playerInfo.y, rotaion: playerInfo.rotation });
                 }
             });
 
-            socket.on("player-hurt", function (playerInfo) {
-                if (playerInfo.playerId == that._playerId) {
-                    that.trigger("Hurt", playerInfo.dmg);
+            socket.on("player-hurt", function (data) {
+                if (data.playerId == that._playerId) {
+                    that.trigger("Hurt", { dmg: data.dmg, hitterId: data.hitterId });
                 }
             });
 

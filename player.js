@@ -104,17 +104,17 @@ Crafty.c("Player", {
                     y: this.y
                 });
 
-                this.hp.current -= data.damage;
+                this.hp.current -= data.dmg;
 
                 this.updateHealthBar(this.hp.current / this.hp.max * 100);
 
                 if (this.playerType == "mine") {
-                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.damage, hitterId: data.ownerId });
+                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.dmg, hitterId: data.hitterId });
                 }
 
                 if (this.hp.current <= 0) {
                     if (this.playerType == "mine") {
-                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, hitterId: data.ownerId });
+                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, hitterId: data.hitterId });
                         this.die();
                     }
                 }
@@ -210,8 +210,6 @@ Crafty.c("Player", {
     movePlayer: function (direction) {
 
         console.log(direction);
-
-
 
         if (direction == "stopMovement") {
             this.engine.move = 'none';

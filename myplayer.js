@@ -5,12 +5,11 @@ Crafty.c("MyPlayer", {
         this.addComponent("Player")
             .onHit("Bullet", function (hitData) {
                 if (this.flicker) return;
-				
-                var bulletOwnerId = hitData[0].obj.ownerId;
-                if (this._playerId != bulletOwnerId) {
-					
-                    this.trigger("Hurt", {damage:hitData[0].obj.dmg,ownerId:bulletOwnerId});
-                    hitData[0].obj.destroy();
+
+                var bullet = hitData[0].obj;
+                if (this._playerId != bullet.ownerId) {
+                    this.trigger("Hurt", { dmg: bullet.dmg, hitterId: bullet.ownerId });
+                    bullet.destroy();
                 }
             })
             .bind('KeyDown', function (e) {
@@ -45,7 +44,7 @@ Crafty.c("MyPlayer", {
                 } else if (e.key == Crafty.keys.X) {
                     this.shoot3();
                 }
-				
+
             })
             .bind('KeyUp', function (e) {
 
