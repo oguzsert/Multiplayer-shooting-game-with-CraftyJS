@@ -253,6 +253,8 @@ Crafty.c("Player", {
     },
 
     shoot: function () {
+        
+        if(this.flicker) return;
 
         var bullet = Crafty.e(this.weapon.bullet);
 
