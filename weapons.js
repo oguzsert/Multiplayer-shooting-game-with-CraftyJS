@@ -53,7 +53,7 @@ Crafty.c("FireBall", {
                 this.y += this.yspeed;
             })
             .attr({
-                dmg: 10,
+                dmg: 9,
                 w: 32,
                 h: 32
             });
@@ -78,25 +78,35 @@ Crafty.c("Tabanca", {
 
         this.updateBar('shootBar', 100);
 
-        this.bind("EnterFrame", function (frame) {
+        this.weaponFrameHandler = function (frame) {
+
+            console.log('Tabanca handler');
 
             if (frame.frame % this.weapon.firerate == 0) {
-                if (this.weapon.shooting && !this.weapon.heat.overheated) {
-                    this.shoot();
-                } else if (this.weapon.heat.current > 0) {
-                    this.weapon.heat.current -= this.weapon.heat.heatPerShoot;
+                if (this.weapon.shooting) {
+                    if (!this.weapon.heat.overheated) this.shoot();
                 }
 
-                if (this.weapon.heat.overheated && this.weapon.heat.current < 25) {
-                    this.weapon.heat.overheated = false;
-                    if (this.playerType == 'mine') {
-                        Crafty.trigger("HideText");
+                if (!this.weapon.shooting || this.weapon.heat.overheated) {
+                    if (this.weapon.heat.current > 0) { //cooldown
+                        this.weapon.heat.current -= this.weapon.heat.heatPerShoot / 2;
                     }
                 }
 
+                if (this.weapon.heat.overheated) {
+                    if (this.weapon.heat.current < 20) {
+                        this.weapon.heat.overheated = false;
+                        if (this.playerType == 'mine') Crafty.trigger("HideText");
+                    }
+                }
+
+                if (this.weapon.heat.current < 0) this.weapon.heat.current = 0;
+
                 this.updateBar('shootBar', this.weapon.heat.max - this.weapon.heat.current)
             }
-        });
+        };
+
+        this.bind("EnterFrame", this.weaponFrameHandler);
     },
 
     shoot: function () {
@@ -123,10 +133,9 @@ Crafty.c("Tabanca", {
             this.weapon.heat.current += this.weapon.heat.heatPerShoot;
 
         if (this.weapon.heat.current >= this.weapon.heat.max) {
+            this.weapon.heat.current = this.weapon.heat.max;
             this.weapon.heat.overheated = true;
-            if (this.playerType == 'mine') {
-                Crafty.trigger("ShowText", "Weapon Overheated!");
-            }
+            if (this.playerType == 'mine') Crafty.trigger("ShowText", "Weapon Overheated!");
         }
     },
 
@@ -147,18 +156,12 @@ Crafty.c("Sapan", {
             bullet: 'FireBall',
             bulletspeed: 20,
             bulletspeedbase: 20,
-            heat: {
-                overheated: false,
-                current: 0,
-                max: 100,
-                heatPerShoot: 100
-            },
             load: {
                 loading: false,
                 ready: false,
                 power: 0,
                 maxPower: 100,
-                powerLimitToShoot: 25,
+                powerLimitToShoot: 50,
             },
             resetLoad: function () {
                 this.loading = false;
@@ -167,20 +170,20 @@ Crafty.c("Sapan", {
             }
         };
 
-        this.bind("EnterFrame", function (frame) {
+        this.weaponFrameHandler = function (frame) {
 
             if (this.flicker) return;
-            if(!this.weapon.load) return;
-            
+
+            console.log('Sapan handler');
+
             if (this.weapon.load.loading) {
                 this.weapon.load.power += 2;
             } else if (this.weapon.load.power > 0 && !this.weapon.load.ready) {
-                console.log("unloading", this.weapon.load.power);
-                this.weapon.load.power -= 0.2;
+                this.weapon.load.power -= 0.5;
                 if (this.weapon.load.power < 0) this.weapon.load.power = 0;
             }
 
-            if (this.weapon.load.power > this.weapon.load.maxPower + 20) {
+            if (this.weapon.load.power > this.weapon.load.maxPower + 40) {
                 this.weapon.load.ready = true;
                 this.weapon.load.power = this.weapon.load.maxPower
             }
@@ -191,19 +194,24 @@ Crafty.c("Sapan", {
                     if (this.weapon.load.power > this.weapon.load.maxPower) {
                         this.weapon.load.power = this.weapon.load.maxPower;
                     }
+
                     console.log('shoot power:', this.weapon.load.power);
                     this.weapon.bulletspeed = this.weapon.bulletspeedbase * this.weapon.load.power / this.weapon.load.maxPower;
                     this.shoot();
+
                     this.weapon.resetLoad.apply(this.weapon.load);
-                } else {
-                    this.weapon.load.ready = false;
                 }
+
+                this.weapon.load.ready = false;
             }
 
             var bar = this.weapon.load.maxPower - this.weapon.load.power;
 
             this.updateBar('shootBar', bar < 0 ? 0 : bar);
-        });
+        };
+
+        this.bind("EnterFrame", this.weaponFrameHandler);
+
     },
 
     shoot: function () {

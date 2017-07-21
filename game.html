@@ -1,44 +1,31 @@
 <html>
 
 <head>
-	<script>
-		var game_path = location.href.lastIndexOf("/") !== -1 ? location.href.substring(0, location.href.lastIndexOf("/") + 1) : location.href;
-	</script>
-	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
-	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
-	<script type="text/javascript" src="./sprites.js"></script>
-	<script type="text/javascript" src="./efects.js"></script>
-	<script type="text/javascript" src="./player.js"></script>
-	<script type="text/javascript" src="./myplayer.js"></script>
-	<script type="text/javascript" src="./otherplayer.js"></script>
-	<script type="text/javascript" src="./weapons.js"></script>
-	<script type="text/javascript" src="./socket.io.js"></script>
+	<style>
+		#score {
+			margin-left: 1px;
+			position: absolute;
+			z-index: 9999999;
+			width: 1028px;
+			height: 774px;
+			background-color: rgba(0, 0, 0, 0.7);
+			display: none;
+		}
+
+		.alert {
+			font-size: 30px;
+			color: red;
+			width: 100%;
+			line-height: 480px;
+			display: none;
+			text-align: center;
+			position: absolute;
+			z-index: 999999;
+			width: 1024px;
+			height: 768px;
+		}
+	</style>
 </head>
-
-<style>
-	#score {
-		margin-left: 1px;
-		position: absolute;
-		z-index: 9999999;
-		width: 1028px;
-		height: 774px;
-		background-color: rgba(0, 0, 0, 0.7);
-		display: none;
-	}
-
-	.alert {
-		font-size: 30px;
-		color: red;
-		width: 100%;
-		line-height: 480px;
-		display: none;
-		text-align: center;
-		position: absolute;
-		z-index: 999999;
-	}
-</style>
 
 <body style="font-family:tahoma;">
 	<div id="login">
@@ -64,13 +51,28 @@
 		<br /><br />
 	</div>
 
-
 	<div id="game" style="display:none">
 		<div id="board" style="float:left; border:3px dotted #000;"></div>
 		<div id="score"></div>
 		<div class="alert"></div>
 	</div>
 
+	<script>
+		var game_path = location.href.lastIndexOf("/") !== -1 ? location.href.substring(0, location.href.lastIndexOf("/") + 1) : location.href;
+	</script>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	 crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+	 crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
+	<script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
+	<script type="text/javascript" src="./sprites.js"></script>
+	<script type="text/javascript" src="./efects.js"></script>
+	<script type="text/javascript" src="./player.js"></script>
+	<script type="text/javascript" src="./myplayer.js"></script>
+	<script type="text/javascript" src="./otherplayer.js"></script>
+	<script type="text/javascript" src="./weapons.js"></script>
+	<script type="text/javascript" src="./socket.io.js"></script>
 
 	<script>
 		var socket = null;
@@ -93,7 +95,6 @@
 			}
 		}
 
-
 		Crafty.init(boardWidth, boardHeight, document.getElementById('board'));
 
 		Crafty.e("2D, Canvas, terrain").attr({ z: -1000 });
@@ -102,11 +103,12 @@
 			alert: $('.alert')
 		}
 
-		Crafty.bind("ShowText", function (text) {
+		Crafty.bind('ShowText', function (text) {
 			infos.alert.text(text).show().effect('pulsate', 500)
 		});
+		
 		Crafty.bind("HideText", function () {
-			infos.alert.text("").hide();
+			infos.alert.text('').hide();
 		});
 
 		function joinGame() {
@@ -134,7 +136,7 @@
 		}
 
 		function createMyPlayer(nick, color) {
-			if (myplayer) return;
+			if (myplayer) return false;
 
 			myplayer = Crafty.e("MyPlayer")
 				.setColor(color)
@@ -219,7 +221,7 @@
 
 			socket.on("scoreboard-update", function (clients) {
 				renderScoreBoard(clients);
-			})			
+			})
 
 			return socket;
 		}
@@ -247,7 +249,6 @@
 			$('#score').html(html);
 		}
 	</script>
-
 </body>
 
 </html>

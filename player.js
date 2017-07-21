@@ -8,6 +8,7 @@ Crafty.c("Player", {
         this.addComponent("2D, Canvas, Collision, Flicker, StatusBar");
 
         this.playerType = "none";
+
         this._playerId = new Date().getTime();
         this._sessionId = new Date().getTime();
 
@@ -17,28 +18,11 @@ Crafty.c("Player", {
         this.z = 10;
         this.rotation = 0;
 
-        this.origin('center');
-
-        var colour = "";
-        this.color = function () {
-            return colour;
-        }
-
         this.engine = {
             move: 'none',
             movespeed: 10,
             rotate: 'none'
         };
-
-        // this.weapon = {
-
-        // };
-
-        this.setColor = function (color) {
-            colour = color;
-            this.addComponent(color + "tank");
-            return this;
-        }
 
         Crafty.audio.add(this.audioFiles.ENGINE_IDLE(this), "asset/sound/engine/090913-009.mp3");
         Crafty.audio.add(this.audioFiles.ENGINE(this), "asset/sound/engine/090913-002.mp3");
@@ -47,9 +31,7 @@ Crafty.c("Player", {
         Crafty.audio.add(this.audioFiles.EXPLODE(this), "asset/sound/explode.mp3");
         Crafty.audio.add(this.audioFiles.DAMAGE(this), "asset/sound/explodemini.mp3");
 
-        this.insideBoard = function (newX, newY) {
-            return newX >= 0 && newX <= Crafty.viewport.width && newY >= 0 && newY <= Crafty.viewport.height
-        };
+        this.origin('center');
 
         this.bind("EnterFrame", function (frame) {
 
@@ -90,36 +72,74 @@ Crafty.c("Player", {
                 newY = this.y - this.engine.movespeed * Math.sin(this.rotation * Math.PI / 180);
                 if (this.insideBoard(newX, newY)) this.place(newX, newY);
             }
-        })
-            .bind("Hurt", function (data) {
+        });
 
-                Crafty.e("Damage").attr({
-                    x: this.x,
-                    y: this.y
-                });
+        this.bind("Hurt", function (data) {
 
-                this.hp.current -= data.dmg;
-
-                this.updateBar('healthBar', this.hp.current / this.hp.max * 100);
-
-                if (this.playerType == "mine") {
-                    this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.dmg, hitterId: data.hitterId });
-                }
-
-                if (this.hp.current <= 0) {
-                    if (this.playerType == "mine") {
-                        this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, hitterId: data.hitterId });
-                        this.die();
-                    }
-                }
+            Crafty.e("Damage").attr({
+                x: this.x,
+                y: this.y
             });
 
-        this.initBar('healthBar', 48);
-        this.initBar('shootBar', 56);
+            this.hp.current -= data.dmg;
+
+            this.updateBar('healthBar', this.hp.current / this.hp.max * 100);
+
+            if (this.playerType == "mine") {
+                this.socket.emit("hurt", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, dmg: data.dmg, hitterId: data.hitterId });
+            }
+
+            if (this.hp.current <= 0) {
+                if (this.playerType == "mine") {
+                    this.socket.emit("die", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, hitterId: data.hitterId });
+                    this.die();
+                }
+            }
+        });
+
+        this.bind("RemoveComponent", function (c) {
+            console.log("RemoveComponent", c);
+
+            if (this.weaponFrameHandler) {
+                console.log('unbind weaponFrameHandler');
+                this.unbind('EnterFrame', this.weaponFrameHandler);
+            }
+
+        });
+
+        this.initBar('healthBar', {
+            width: 48,
+            colors: {
+                max: 'green',
+                medium: 'orange',
+                min: 'red'
+            }
+        });
+
+        this.initBar('shootBar', {
+            width: 48,
+            colors: {
+                max: 'indigo',
+                medium: 'darkslateblue',
+                min: 'powderblue'
+            }
+        });
 
         this.selectWeapon('Tabanca');
+    },
 
-        Crafty.audio.play(this.audioFiles.ENGINE_IDLE(this), -1, 0.2);
+    insideBoard: function (newX, newY) {
+        return newX >= 0 && newX <= Crafty.viewport.width && newY >= 0 && newY <= Crafty.viewport.height
+    },
+
+    setColor: function (color) {
+        this.color = color;
+        this.addComponent(color + "tank");
+        return this;
+    },
+
+    color: function () {
+        return this.color;
     },
 
     reset: function () {
@@ -217,8 +237,6 @@ Crafty.c("Player", {
 
     rotatePlayer: function (direction) {
 
-        console.log(direction);
-
         if (direction == "stopRotate") {
             this.engine.rotate = 'none';
         }
@@ -232,10 +250,13 @@ Crafty.c("Player", {
 
     selectWeapon: function (weapon) {
 
+        if (this.selectedWeapon == weapon) return;
+
         console.log('selectWeapon', weapon);
 
-        this.removeComponent(this.selectedWeapon);
+        if (this.playerType == 'mine') console.log('myplayer', this);
 
+        this.removeComponent(this.selectedWeapon, false);
         this.addComponent(weapon);
 
         this.selectedWeapon = weapon;
@@ -269,7 +290,9 @@ Crafty.c("StatusBar", {
             upBlock: null,
             downBlock: null,
 
-            marginY: 16
+            marginY: 16,
+
+            colors: {}
         };
 
         this.shootBar = {
@@ -289,13 +312,14 @@ Crafty.c("StatusBar", {
         };
     },
 
-    initBar: function (barType, totalWidth) {
+    initBar: function (barType, props) {
 
         var bar = this[barType];
 
         if (!bar) return;
 
-        bar.width = totalWidth;
+        bar.width = props.width;
+        bar.colors = props.colors;
 
         bar.blockWidth = bar.width * bar.filledFraction;
 
@@ -341,11 +365,11 @@ Crafty.c("StatusBar", {
         });
 
         if (bar.filledFraction >= 0.8 && bar.filledFraction <= 1)
-            bar.upBlock.color('green')
+            bar.upBlock.color(bar.colors.max)
         else if (bar.filledFraction <= 0.2) {
-            bar.upBlock.color('red')
+            bar.upBlock.color(bar.colors.min)
         } else {
-            bar.upBlock.color('orange')
+            bar.upBlock.color(bar.colors.medium)
         }
 
         return this;

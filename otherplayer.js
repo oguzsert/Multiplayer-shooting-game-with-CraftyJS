@@ -104,6 +104,7 @@ Crafty.c("OtherPlayer", {
                 }
             });
             
+            this.z = 100;
         }
     },
 

@@ -68,6 +68,8 @@ Crafty.c("MyPlayer", {
                 }
             });
 
+        this.z = 1000;
+
         this.playerType = "mine";
 
         this.socket = null;
