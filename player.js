@@ -117,7 +117,7 @@ Crafty.c("Player", {
         this.initBar('healthBar', 48);
         this.initBar('shootBar', 56);
 
-        this.selectWeapon('Sapan');
+        this.selectWeapon('Tabanca');
 
         Crafty.audio.play(this.audioFiles.ENGINE_IDLE(this), -1, 0.2);
     },

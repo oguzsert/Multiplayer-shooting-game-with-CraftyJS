@@ -96,6 +96,14 @@ Crafty.c("OtherPlayer", {
                     that.stopShoot();
                 }
             });
+
+            socket.on("player-change-weapon", function (playerInfo) {
+                if (playerInfo.playerId == that._playerId) {
+                    that.place(playerInfo.x, playerInfo.y, playerInfo.rotation);
+                    that.selectWeapon(playerInfo.weapon);
+                }
+            });
+            
         }
     },
 

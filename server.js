@@ -105,6 +105,11 @@ io.on('connection', function (socket) {
 		socket.broadcast.emit("player-stop-shoot", data);
 	});
 
+	socket.on("select-weapon", function (data) {
+		console.log("select-weapon", data);
+		socket.broadcast.emit("player-change-weapon", data);
+	});
+
 	socket.on("ineedcorrections", function () {
 		socket.broadcast.emit("sendCorrections");
 	});
