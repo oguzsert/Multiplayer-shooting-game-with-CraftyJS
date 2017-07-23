@@ -38,6 +38,33 @@ Crafty.c("BasicBullet", {
     }
 });
 
+
+Crafty.c("FireBallExplosion",{
+    init: function(){
+        this.addComponent("2D", "Canvas","Bullet","SpriteAnimation","fireballexplosion")
+        .reel("fireball_explosion_action",100,[
+            [0,0],[0,1],[0,2],[0,3],
+            [1,0],[1,1],[1,2],[1,3],
+            [2,0],[2,1],[2,2],[2,3],
+            [3,0],[3,1],[3,2],[3,3],
+        ])
+        .animate("fireball_explosion_action")
+        .bind("AnimationEnd",function(){          
+            Crafty.audio.play("fireballexplode", 1, 1);
+           this.destroy();
+        }).attr({
+            w:128,
+            h:128,
+            x:0,
+            y:0,
+            z:1
+
+        });        
+    }    
+});
+
+
+
 Crafty.c("FireBall", {
     init: function () {
         this
@@ -45,7 +72,12 @@ Crafty.c("FireBall", {
             .reel("fire", 500, 0, 0, 10)
             .animate("fire")
             .bind("AnimationEnd", function () {
-                this.destroy();
+                var explosion = Crafty.e("FireBallExplosion");  
+                explosion.x = this.x-64;
+                explosion.y = this.y-64;  
+                explosion.ownerId = this.ownerId;
+                explosion.dmg = 2000;        
+                this.destroy();              
                 console.log("FireBall destroyed");
             })
             .bind("EnterFrame", function (frame) {
@@ -80,7 +112,7 @@ Crafty.c("Tabanca", {
 
         this.weaponFrameHandler = function (frame) {
 
-            console.log('Tabanca handler');
+            //console.log('Tabanca handler');
 
             if (frame.frame % this.weapon.firerate == 0) {
                 if (this.weapon.shooting) {
@@ -174,7 +206,7 @@ Crafty.c("Sapan", {
 
             if (this.flicker) return;
 
-            console.log('Sapan handler');
+            //console.log('Sapan handler');
 
             if (this.weapon.load.loading) {
                 this.weapon.load.power += 2;

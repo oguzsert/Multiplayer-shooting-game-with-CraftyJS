@@ -8,6 +8,10 @@ Crafty.sprite(128,game_path + "asset/img/explosion.png",{
     explosion3:[0,2]
 });
 
+Crafty.sprite(64,game_path+"asset/img/exp2_0.png",{
+    fireballexplosion:[0,0]
+});
+
 
 Crafty.sprite(32,game_path + "asset/img/firebullet.png",{
     fireball:[0,0],

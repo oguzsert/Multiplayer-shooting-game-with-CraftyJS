@@ -30,6 +30,7 @@ Crafty.c("Player", {
         Crafty.audio.add(this.audioFiles.SHOOT3(this), "asset/sound/shoot/shoot002.mp3");
         Crafty.audio.add(this.audioFiles.EXPLODE(this), "asset/sound/explode.mp3");
         Crafty.audio.add(this.audioFiles.DAMAGE(this), "asset/sound/explodemini.mp3");
+        Crafty.audio.add(this.audioFiles.FIREBALLEXPLODE(this), "asset/sound/fireballexplode.wav");
 
         this.origin('center');
 
@@ -269,6 +270,7 @@ Crafty.c("Player", {
         SHOOT3: function (that) { return "shoot3_" + that._sessionId; },
         EXPLODE: function (that) { return "explode"; },
         DAMAGE: function (that) { return "damage"; },
+        FIREBALLEXPLODE : function(that){return "fireballexplode"}
     },
 });
 
