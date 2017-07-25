@@ -48,6 +48,10 @@ Crafty.c("MyPlayer", {
                     this.socket.emit("select-weapon", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, weapon: 'Sapan' });
                     this.selectWeapon('Sapan');
                 }
+                else if (e.key == Crafty.keys['3']) {
+                    this.socket.emit("select-weapon", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, weapon: 'GuidedMissileLauncher' });
+                    this.selectWeapon('GuidedMissileLauncher');
+                }
 
             })
             .bind('KeyUp', function (e) {

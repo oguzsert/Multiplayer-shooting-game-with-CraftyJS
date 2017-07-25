@@ -12,7 +12,7 @@ Crafty.c("Bullet", {
                     this.destroy();
                 }
             })
-            .onHit("Bullet", function (ent) {
+            .onHit("Bullet", function (ent) {                
                 if (this.ownerId != ent[0].obj.ownerId) {
                     this.destroy();
                     ent[0].obj.destroy();
@@ -41,7 +41,7 @@ Crafty.c("BasicBullet", {
 
 Crafty.c("FireBallExplosion",{
     init: function(){
-        this.addComponent("2D", "Canvas","Bullet","SpriteAnimation","fireballexplosion")
+        this.addComponent("Bullet","SpriteAnimation","fireballexplosion")
         .reel("fireball_explosion_action",100,[
             [0,0],[0,1],[0,2],[0,3],
             [1,0],[1,1],[1,2],[1,3],
@@ -91,6 +91,9 @@ Crafty.c("FireBall", {
             });
     }
 });
+
+
+
 
 Crafty.c("Tabanca", {
     init: function () {
@@ -178,6 +181,141 @@ Crafty.c("Tabanca", {
     stopShoot: function () {
         this.weapon.shooting = false;
     },
+});
+
+Crafty.c("GuidedMissile", {
+    init: function () {
+        
+        this
+            .addComponent("Bullet")  
+           
+            .bind("EnterFrame", function (frame) {      
+                if(!this.releaseStatus && !this.locked){          
+                    var that = this;
+                    this.x += this.xspeed();
+                    this.y += this.yspeed();
+
+                    var circle = new Crafty.circle(this.x,this.y,300);
+                    
+                    if(!this.locked){
+                        Crafty("Player").each(function(player) {
+                            console.log(this.__c);
+                            if(this._playerId != that.ownerId && circle.containsPoint(this.x,this.y)){
+                                that.locked = true;
+                                that.targetPlayer = this;
+                            }                            
+                        });
+                    }
+
+                }
+                else if(this.releaseStatus && !this.locked){
+                    this.x = this.xspeed();
+                    this.y = this.yspeed();
+                    this.rotation+=15;
+                    if(this.rotation > 1080){
+                        this.releaseStatus = false;
+                    }
+                }
+                else if(this.locked){
+                     this.lastRotation =  Math.atan2(this.targetPlayer.y - this.y, this.targetPlayer.x - this.x) * 180 / Math.PI;
+                    
+                    this.x += this.xspeed();
+                    this.y += this.yspeed();
+
+                     var circle = new Crafty.circle(this.x,this.y,20);
+                    if(circle.containsPoint(this.targetPlayer.x,this.targetPlayer.y)){
+                        var explosion = Crafty.e("FireBallExplosion");  
+                        explosion.x = this.x-64;
+                        explosion.y = this.y-64;  
+                        explosion.ownerId = this.ownerId;
+                        explosion.dmg = 2000;   
+                        this.destroy();
+                    }
+                   
+                }
+            })
+            .attr({
+                dmg: 5,
+                w: 8,
+                h: 8
+            }).color("red").origin("center");
+    }
+});
+
+
+Crafty.c("GuidedMissileLauncher",{
+    init: function () {
+
+        this.weapon = {
+            bullet: "GuidedMissile",  
+            bulletspeed: 1,
+            load: {
+                loading: false,
+                ready: false,
+                power: 0,
+                maxPower: 100,
+                powerLimitToShoot: 50,
+            }         
+        };
+
+        this.weaponFrameHandler = function (frame) {
+            if (this.weapon.load.ready) {
+                this.shoot();
+                this.weapon.load.ready= false;
+            }
+        };
+
+        this.bind("EnterFrame", this.weaponFrameHandler);
+
+      
+    },
+    shoot: function () {
+           if (this.flicker) return;              
+           var that = this;
+           that.weapon.bulletspeed = 1;
+           var bullet = Crafty.e(this.weapon.bullet);
+           var release = true;
+
+           var lastX = that.x+40;
+           var lastY = that.y;
+           var lastRotation = that.rotation;
+
+            bullet.attr({
+                lastRotation:lastRotation,
+                releaseStatus:release,
+                ownerId: this._playerId,
+                x: this.x,
+                y: this.y,
+                rotation: this.rotation,
+                xspeed: function(){ 
+                    if(!this.releaseStatus){
+                        that.weapon.bulletspeed+=0.3; 
+                        return that.weapon.bulletspeed * Math.cos(this.lastRotation * Math.PI / 180);
+                    }
+                    else{
+                        return lastX;
+                    }
+                },
+                yspeed: function(){ 
+                    if(!this.releaseStatus){
+                        return that.weapon.bulletspeed * Math.sin(this.lastRotation * Math.PI / 180);
+                    }
+                    else{
+                        return lastY;
+                    }
+                }
+            });
+
+
+     },
+    startShoot: function () {
+        console.log('startShoot');       
+        this.weapon.load.ready = true;
+    },
+    stopShoot: function () {
+        console.log('stopShoot');
+        this.weapon.load.ready = false;
+    }
 });
 
 
