@@ -12,6 +12,20 @@ Crafty.c("MyPlayer", {
                     bullet.destroy();
                 }
             })
+            .onHit("Mayin", function (hitData) {
+                if (this.flicker) return;
+
+                var mayin = hitData[0].obj;
+
+                this.trigger("Hurt", { dmg: mayin.dmg, hitterId: mayin.ownerId });
+
+                mayin.destroy();
+
+                Crafty.e("DieExplosion").attr({
+                    x: this.x,
+                    y: this.y
+                });
+            })
             .bind('KeyDown', function (e) {
 
                 if (e.key == Crafty.keys.HOME && !this.isActive) {
@@ -44,13 +58,17 @@ Crafty.c("MyPlayer", {
                 } else if (e.key == Crafty.keys['1']) {
                     this.socket.emit("select-weapon", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, weapon: 'Tabanca' });
                     this.selectWeapon('Tabanca');
-                }else if (e.key == Crafty.keys['2']) {
+                } else if (e.key == Crafty.keys['2']) {
                     this.socket.emit("select-weapon", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, weapon: 'Sapan' });
                     this.selectWeapon('Sapan');
                 }
                 else if (e.key == Crafty.keys['3']) {
                     this.socket.emit("select-weapon", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, weapon: 'GuidedMissileLauncher' });
                     this.selectWeapon('GuidedMissileLauncher');
+                }
+                else if (e.key == Crafty.keys['4']) {
+                    this.socket.emit("select-weapon", { x: this.x, y: this.y, rotation: this.rotation, playerId: this._playerId, weapon: 'MayinLauncher' });
+                    this.selectWeapon('MayinLauncher');
                 }
 
             })
